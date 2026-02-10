@@ -1,0 +1,39 @@
+.floating-contact {
+  position: fixed;
+  bottom: 30px;
+  right: 20px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.main-btn {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: orange;
+  border: none;
+  color: white;
+  font-size: 25px;
+  cursor: pointer;
+}
+
+.contact-list {
+  display: none;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.contact-list a {
+  margin: 6px 0;
+  padding: 10px 14px;
+  border-radius: 20px;
+  color: white;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.whatsapp { background: #22c55e; }
+.instagram { background: linear-gradient(45deg,#a855f7,#ec4899); }
+.phone { background: #3b82f6; }

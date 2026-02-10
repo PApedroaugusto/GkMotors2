@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Detalhes do Veículo</title>
+  <link rel="stylesheet" href="css/vehicle-details1.css">
+   <link rel="stylesheet" href="Layaut/header.css">
+  <link rel="stylesheet" href="Layaut/footer.css">
+</head>
+<body>
+
+<header class="site-header" id="siteHeader">
+  <div class="header-container">
+
+    <a href="index.html" class="logo">
+      <div class="logo-box">🚗</div>
+      <span class="logo-text"><strong>GK</strong>MOTORS</span>
+    </a>
+
+    <nav class="nav-desktop">
+      <a href="index.html">Início</a>
+      <a href="vehicles.html">Estoque</a>
+      <a href="brands.html">Marcas</a>
+      <a href="sell.html" class="sell-car">Venda seu carro</a>
+    </nav>
+
+    <div class="header-actions">
+      <a href="login.html" class="btn-admin">Admin</a>
+      <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </div>
+
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Início</a>
+    <a href="vehicles.html">Estoque</a>
+    <a href="brands.html">Marcas</a>
+    <a href="sell.html" class="sell-car">Venda seu carro</a>
+    <a href="login.html" class="admin-link">Admin</a>
+  </div>
+</header>
+
+<br></br>
+
+<header class="vehicle-header">
+  <a href="vehicles.html" class="back-btn">← Voltar ao estoque</a>
+</header>
+
+<main class="container">
+
+
+
+
+<div class="gallery-container">
+  <div class="gallery-main">
+    <button class="gallery left" onclick="prevImage()">&#10094;</button>
+    <img id="mainImage" src="" alt="Veículo">
+    <button class="gallery right" onclick="nextImage()">&#10095;</button>
+  </div>
+
+  <div class="gallery-dots" id="dots"></div>
+
+  <div class="gallery-thumbs" id="thumbnails"></div>
+
+  <div class="gallery-fullscreen" id="fullscreenOverlay" onclick="closeFullscreen()"></div>
+    <img id="fullscreenImage" src="">
+  </div>
+</div>
+
+
+
+
+<main class="b">
+  <!-- DETALHES -->
+  <section class="details">
+    
+    <span id="category" class="badge"></span>
+    <h1 id="title"></h1>
+    <div id="price" class="price"></div>
+
+    <div class="specs" id="specs"></div>
+
+    <div class="guarantee">
+      ✔ Garantia de 3 meses para motor e câmbio
+    </div>
+
+    <div class="description">
+      <h3>Descrição</h3>
+      <p id="description"></p>
+    </div>
+
+    <div class="actions">
+      <a id="whatsappBtn" target="_blank" class="btn whatsapp">WhatsApp</a>
+      <a href="https://instagram.com/gkmotors.aps" target="_blank" class="btn outline">Instagram</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="footer-container">
+    <div>
+      <h3><strong class="carro">🚗</strong><strong class="GK">GK</strong>MOTORS</h3>
+      <p>Sua concessionária premium de veículos seminovos e usados. Qualidade e confiança em cada negociação.</p>
+    </div>
+
+    <div>
+      <h4>Navegação</h4>
+      <a href="index.html">Início</a>
+      <a href="vehicles.html">Estoque</a>
+      <a href="brands.html">Marcas</a>
+      <a href="sell.html" class="sell-car">Venda seu carro</a>
+    </div>
+
+    <div>
+      <h4>Contato</h4>
+      <p>📞 (62) 99284-7266</p>
+      <p>📍 Anapolis-GO - Avenida Brasil Sul, 792 vila Jussara</p>
+      <p>Segunda a Sexta das 8h às 18h
+        <br>Sábado das 8h às 12h
+      </p>
+    </div>
+  </div>
+
+  <p class="copyright">
+    © 2026 GK Motors. Todos os direitos reservados.
+  </p>
+</footer>
+<script src="Layaut/floating-contact.js"></script>
+<script src="Layaut/header.js"></script>
+<script src="js/api.js"></script>
+<script src="js/vehicle-details.js"></script>
+
+
+<!-- FULLSCREEN GALLERY -->
+<div id="fullscreen" class="fullscreen hidden">
+  <button class="fs-close" onclick="closeFullscreen()">✕</button>
+
+  <button class="fs-nav left" onclick="prevImage()">❮</button>
+
+  <img id="fsImage" />
+
+  <button class="fs-nav right" onclick="nextImage()">❯</button>
+</div>
+
+
+</body>
+</html>

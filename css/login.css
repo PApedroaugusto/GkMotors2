@@ -1,0 +1,39 @@
+body {
+  background-color: #000;
+}
+
+.login-container {
+  max-width: 500px;
+  margin: 50px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 18px;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.login-container button {
+  width: 105%;
+  padding: 10px;
+  background: #000;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+}
+
+.error {
+  color: red;
+  margin-top: 10px;
+}
+
+.hidden {
+  display: none;
+}

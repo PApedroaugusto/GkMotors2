@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GK Motors</title>
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="Layaut/header.css">
+  <link rel="stylesheet" href="Layaut/footer.css">
+  <link rel="stylesheet" href="Layaut/floating-contact.css">
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="site-header" id="siteHeader">
+  <div class="header-container">
+
+    <a href="index.html" class="logo">
+      <div class="logo-box">🚗</div>
+      <span class="logo-text"><strong>GK</strong>MOTORS</span>
+    </a>
+
+    <nav class="nav-desktop">
+      <a href="index.html">Início</a>
+      <a href="vehicles.html">Estoque</a>
+      <a href="brands.html">Marcas</a>
+      <a href="sell.html" class="sell-car">Venda seu carro</a>
+    </nav>
+
+    <div class="header-actions">
+      <a href="login.html" class="btn-admin">Admin</a>
+      <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </div>
+
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Início</a>
+    <a href="vehicles.html">Estoque</a>
+    <a href="brands.html">Marcas</a>
+    <a href="sell.html" class="sell-car">Venda seu carro</a>
+    <a href="login.html" class="admin-link">Admin</a>
+  </div>
+</header>
+
+
+
+<!-- ================= HERO ================= -->
+<section class="hero">
+<div class="hero-image">
+    <img src="ChatGPT Image 25 de jan. de 2026, 09_45_44.png" alt="GK Motors">
+  </div>
+
+  <h1>Encontre seu <span>veículo ideal</span></h1>
+
+  <p class="hero-description">
+    Os melhores seminovos e usados com garantia de procedência.
+    <br>
+    Qualidade e confiança em cada negociação.
+  </p>
+<br class="space">
+  <div class="search-box">
+    <select id="brandSelect">
+      <option value="">Marca</option>
+      
+    </select>
+
+    <button id="searchBtn">Buscar</button>
+  </div>
+
+  <div class="stats">
+    <div>
+      <div class="stat-value">500+</div>
+      <div class="stat-label">Veículos vendidos</div>
+    </div>
+    <div>
+      <div class="stat-value">100%</div>
+      <div class="stat-label">Procedência</div>
+    </div>
+    <div>
+      <div class="stat-value">10+</div>
+      <div class="stat-label">Anos experiência</div>
+    </div>
+  </div>
+
+ 
+  
+</section>
+
+<!-- ================= MARCAS ================= -->
+<section class="container">
+  <div id="brandsGrid" class="brands-grid"></div>
+</section>
+
+<!-- ================= DESTAQUES ================= -->
+<section class="sectiondestaque">
+  <p class="Destaque">EM DESTAQUE</p>
+  <h2 class="H2">Veículos selecionados</h2>
+  <p class="Proc">Confira os modelos mais procurados da nossa frota.</p>
+  <div id="featuredVehicles" class="grid"></div>
+</section>
+
+<!-- ================= POR QUE NÓS ================= -->
+<section class="why-us">
+  <p class="Porque">POR QUE ESCOLHER A GK MOTORS?</p>
+  <h2>Excelência em cada detalhe</h2>
+
+  <div class="features-grid">
+    <div class="feature">✔ Procedência garantida<br><small>Todos os veículos são vistoriados.</small></div>
+    <div class="feature">✔ Qualidade premium<br><small>Somente veículos selecionados.</small></div>
+    <div class="feature">✔ Processo ágil<br><small>Documentação rápida.</small></div>
+    <div class="feature">✔ Garantia inclusa<br><small>Tranquilidade na compra.</small></div>
+    <div class="feature">✔ Grande variedade<br><small>Diversas marcas e modelos.</small></div>
+    <div class="feature">✔ Atendimento exclusivo<br><small>Equipe especializada.</small></div>
+  </div>
+</section>
+
+<!-- localização -->
+ <section class="localizacao">
+  <div class="localizacao-container">
+
+<div class="localizacao-info">
+      <h2>📍 Nossa Localização</h2>
+    </div>
+
+  </div>
+
+    <div class="localizacao-mapa">
+      
+      <!-- MAPA -->
+      <iframe
+        src="https://www.google.com/maps?q=-16.3371639,-48.9527674&z=18&output=embed"
+        allowfullscreen
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+
+      <!-- BOTÃO DENTRO DO MAPA -->
+      <a 
+        href="https://www.google.com/maps/dir/?api=1&destination=-16.3371639,-48.9527674"
+        target="_blank"
+        class="btn-mapa">
+        🚗 Ver rota
+      </a>
+
+    </div>
+
+<div class="localizacao-info">
+    
+      <p>Anápolis - GO</p>
+      <p>Avenida Brasil Sul, 792 – Vila Jussara</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= COMENTÁRIOS ================= -->
+<section class="comentarios">
+  <h2>💬 O que acharam da GK Motors?</h2>
+
+  <form id="commentForm">
+    <input id="nome" placeholder="Seu nome" required>
+    <textarea id="comentario" placeholder="Comentário" required></textarea>
+    <button type="submit">Enviar</button>
+  </form>
+
+  <div id="commentsList"></div>
+</section>
+
+
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="footer-container">
+    <div>
+      <h3>🚗 <strong>GK</strong>MOTORS</h3>
+      <p>Sua concessionária premium de veículos seminovos e usados.</p>
+    </div>
+
+    <div>
+      <h4>Navegação</h4>
+      <a href="index.html">Início</a>
+      <a href="vehicles.html">Estoque</a>
+      <a href="brands.html">Marcas</a>
+      <a href="sell.html" class="sell-car">Venda seu carro</a>
+    </div>
+
+    <div>
+      <h4>Contato</h4>
+      <p>📞 (62) 99284-7266</p>
+      <p>Seg–Sex 8h às 18h | Sáb 8h às 12h</p>
+    </div>
+  </div>
+
+  <p class="copyright">
+    © 2026 GK Motors. Todos os direitos reservados.
+  </p>
+</footer>
+
+<!-- ================= FLOATING CONTACT ================= -->
+<div class="floating-contact">
+  <div class="contact-list" id="contactList">
+    <a href="https://wa.me/5562992847266" target="_blank" class="whatsapp">WhatsApp</a>
+    <a href="https://instagram.com/gkmotors.aps" target="_blank" class="instagram">Instagram</a>
+    <a href="tel:+5562992847266" class="phone">Ligar</a>
+  </div>
+  <button class="main-btn" onclick="toggleContacts()">💬</button>
+</div>
+
+<!-- JS -->
+ <script src="js/api.js"></script>
+
+ <script src="js/comments.js"></script>
+<script src="js/home1.js"></script>
+<script src="Layaut/floating-contact.js"></script>
+<script src="Layaut/header.js"></script>
+
+
+
+</body>
+</html>

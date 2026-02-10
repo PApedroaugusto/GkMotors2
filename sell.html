@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Venda seu carro | GK Motors</title>
+  <link rel="stylesheet" href="css/global.css">
+  <link rel="stylesheet" href="css/sell.css">
+<link rel="stylesheet" href="Layaut/header.css">
+<link rel="stylesheet" href="Layaut/footer.css">
+
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="site-header" id="siteHeader">
+  <div class="header-container">
+
+    <a href="index.html" class="logo">
+      <div class="logo-box">🚗</div>
+      <span class="logo-text"><strong>GK</strong>MOTORS</span>
+    </a>
+
+    <nav class="nav-desktop">
+      <a href="index.html">Início</a>
+      <a href="vehicles.html">Estoque</a>
+      <a href="brands.html">Marcas</a>
+      <a href="sell.html" class="sell-car">Venda seu carro</a>
+    </nav>
+
+    <div class="header-actions">
+      <a href="login.html" class="btn-admin">Admin</a>
+      <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    </div>
+
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="index.html">Início</a>
+    <a href="vehicles.html">Estoque</a>
+    <a href="brands.html">Marcas</a>
+    <a href="sell.html" class="sell-car">Venda seu carro</a>
+    <a href="login.html" class="admin-link">Admin</a>
+  </div>
+</header>
+
+<section class="sell-page">
+
+  <div class="sell-header">
+    <h1>Venda seu carro</h1>
+    <p>Receba uma avaliação rápida e sem compromisso</p>
+  </div>
+
+  <form id="sellForm" class="sell-form">
+
+    <!-- PASSO 1 -->
+    <div class="step active" id="step1">
+      <h2>👤 Seus dados</h2>
+
+      <input type="text" id="name" placeholder="Nome completo" required>
+      <input type="tel" id="phone" placeholder="Telefone / WhatsApp" required>
+      <input type="email" id="email" placeholder="E-mail" required>
+
+      <button type="button" class="next-btn" onclick="nextStep(2)">
+        Próximo passo →
+      </button>
+    </div>
+
+    <!-- PASSO 2 -->
+    <div class="step" id="step2">
+      <h2>🚗 Dados do veículo</h2>
+
+      
+
+      <textarea id="description" placeholder="Descreva o veículo (ano, km, estado, opcionais...)" required></textarea>
+
+      <input type="text" id="price" placeholder="Valor desejado (ex: R$ 45.000)" required>
+
+      <button type="submit" class="submit-btn">
+        📲 Enviar para WhatsApp
+      </button>
+    </div>
+
+  </form>
+
+<!-- PRÓXIMOS PASSOS -->
+<div class="next-steps">
+  <h2>🔎 Próximos passos</h2>
+
+  <div class="steps-grid">
+    <div class="step-item">
+      <span>1</span>
+      <p>Você envia os dados e fotos do veículo</p>
+    </div>
+
+    <div class="step-item">
+      <span>2</span>
+      <p>Nossa equipe analisa as informações</p>
+    </div>
+
+    <div class="step-item">
+      <span>3</span>
+      <p>Entramos em contato para avaliação</p>
+    </div>
+
+    <div class="step-item">
+      <span>4</span>
+      <p>Negociação rápida e segura</p>
+    </div>
+  </div>
+</div>
+
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="footer-container">
+    <div>
+      <h3>🚗 <strong>GK</strong>MOTORS</h3>
+      <p>Sua concessionária premium de veículos seminovos e usados.</p>
+    </div>
+
+    <div>
+      <h4>Navegação</h4>
+      <a href="index.html">Início</a>
+      <a href="vehicles.html">Estoque</a>
+      <a href="brands.html">Marcas</a>
+      <a href="sell.html" class="sell-car">Venda seu carro</a>
+    </div>
+
+    <div>
+      <h4>Contato</h4>
+      <p>📞 (62) 99284-7266</p>
+      <p>📍 Anapolis-GO - Avenida Brasil Sul, 792 vila Jussara</p>
+      <p>Seg–Sex 8h às 18h <br>Sáb 8h às 12h</p>
+    </div>
+  </div>
+
+  <p class="copyright">
+    © 2026 GK Motors. Todos os direitos reservados.
+  </p>
+</footer>
+
+<script src="Layaut/header.js"></script>
+<script src="js/sell.js"></script>
+</body>
+</html>
