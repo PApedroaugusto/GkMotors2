@@ -1,6 +1,5 @@
 const API = window.API_VEHICLES;
 
-
 // ===============================
 // ELEMENTOS
 // ===============================
@@ -37,7 +36,7 @@ let editingId = null;
 let currentPhotos = [];
 
 // ===============================
-// LOAD (CORRIGIDO)
+// LOAD
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   loadVehicles();
@@ -47,19 +46,21 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
+// ===============================
+// FUNÇÕES DE VEÍCULOS
+// ===============================
 async function loadVehicles() {
   try {
     const res = await fetch(API);
+    if (!res.ok) throw new Error("Erro ao carregar veículos");
     vehicles = await res.json();
     renderTable();
   } catch (err) {
-    console.error("Erro ao carregar veículos:", err);
+    console.error(err);
+    alert(err.message);
   }
 }
 
-// ===============================
-// TABELA
-// ===============================
 function renderTable(list = vehicles) {
   vehicleTable.innerHTML = "";
 
@@ -73,7 +74,7 @@ function renderTable(list = vehicles) {
         <td>${v.category || "-"}</td>
         <td>${v.fuel || "-"}</td>
         <td>${v.transmission || "-"}</td>
-        <td>R$ ${Number(v.price).toLocaleString("pt-BR")}</td>
+        <td>R$ ${Number(v.price || 0).toLocaleString("pt-BR")}</td>
         <td>${v.status}</td>
         <td>${v.featured ? "⭐" : "-"}</td>
         <td>
@@ -87,10 +88,6 @@ function renderTable(list = vehicles) {
   updateStats();
 }
 
-
-// ===============================
-// STATS
-// ===============================
 function updateStats() {
   totalVehicles.innerText = vehicles.length;
   availableVehicles.innerText = vehicles.filter(v => v.status === "disponivel").length;
@@ -103,9 +100,6 @@ function updateStats() {
   totalValue.innerText = `R$ ${total.toLocaleString("pt-BR")}`;
 }
 
-// ===============================
-// BUSCA (CORRIGIDA)
-// ===============================
 function filterVehicles(text) {
   const search = text.toLowerCase();
 
@@ -121,9 +115,6 @@ function filterVehicles(text) {
   renderTable(filtered);
 }
 
-// ===============================
-// MODAL
-// ===============================
 function openForm() {
   vehicleModal.style.display = "flex";
 }
@@ -133,30 +124,22 @@ function closeForm() {
   currentPhotos = [];
   vehicleModal.style.display = "none";
 
-  document
-    .querySelectorAll("#vehicleModal input, textarea, select")
-    .forEach(el => (el.value = ""));
-
+  document.querySelectorAll("#vehicleModal input, textarea, select").forEach(el => el.value = "");
   previewContainer.innerHTML = "";
   imageInput.value = "";
   featured.checked = false;
 }
 
-// ===============================
-// UPLOAD DE IMAGENS
-// ===============================
-imageInput.addEventListener("change", async () => {
+imageInput.addEventListener("change", () => {
   const files = Array.from(imageInput.files);
-
-  for (const file of files) {
+  files.forEach(file => {
     const reader = new FileReader();
     reader.onload = () => {
       currentPhotos.push(reader.result);
       renderPreview();
     };
     reader.readAsDataURL(file);
-  }
-
+  });
   imageInput.value = "";
 });
 
@@ -178,9 +161,6 @@ function renderPreview() {
   });
 }
 
-// ===============================
-// SAVE MAIS RÁPIDO
-// ===============================
 async function saveVehicle() {
   if (!brand.value || !model.value || !year.value || !price.value) {
     alert("Preencha marca, modelo, ano e preço");
@@ -192,68 +172,56 @@ async function saveVehicle() {
     return;
   }
 
+  const token = localStorage.getItem("adminToken") || "";
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`
+  };
+
   const vehicle = {
     brand: brand.value.trim(),
     model: model.value.trim(),
-    year: year.value.trim(),
+    year: Number(year.value),
     price: Number(price.value),
     power: power.value ? Number(power.value) : null,
-    category: category.value,
+    category: category.value || null,
     rating: rating.value ? Number(rating.value) : null,
-    fuel: fuel.value,
-    transmission: transmission.value,
-    color: color.value,
-    description: description.value,
+    fuel: fuel.value || null,
+    transmission: transmission.value || null,
+    color: color.value || null,
+    description: description.value || null,
     photos: currentPhotos,
     image: currentPhotos[0],
     status: status.value,
     featured: featured.checked
   };
 
-  // Se estiver editando
-  if (editingId) {
-    // Atualiza localmente primeiro
-    const index = vehicles.findIndex(v => String(v._id || v.id) === editingId);
-    if (index > -1) vehicles[index] = { ...vehicles[index], ...vehicle };
+  try {
+    let res;
+    if (editingId) {
+      res = await fetch(`${API}/${editingId}`, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(vehicle)
+      });
+    } else {
+      res = await fetch(API, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(vehicle)
+      });
+    }
 
-    renderTable(); // Atualiza tabela imediatamente
+    if (!res.ok) throw new Error("Erro ao salvar veículo");
 
-    // Atualiza no servidor
-    fetch(`${API}/${editingId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(vehicle)
-    }).catch(err => console.error("Erro ao atualizar:", err));
-  } else {
-    // Cria um ID temporário local para exibir imediatamente
-    const tempId = Date.now().toString();
-    const newVehicle = { ...vehicle, _id: tempId };
-
-    vehicles.push(newVehicle); // Adiciona localmente
-    renderTable(); // Atualiza tabela imediatamente
-
-    // Salva no servidor
-    fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(vehicle)
-    })
-      .then(res => res.json())
-      .then(saved => {
-        // Substitui o ID temporário pelo ID real do servidor
-        const index = vehicles.findIndex(v => v._id === tempId);
-        if (index > -1) vehicles[index] = saved;
-        renderTable();
-      })
-      .catch(err => console.error("Erro ao salvar:", err));
+    loadVehicles();
+    closeForm();
+  } catch (err) {
+    console.error(err);
+    alert(err.message);
   }
-
-  closeForm();
 }
 
-// ===============================
-// EDIT
-// ===============================
 function editVehicle(id) {
   const v = vehicles.find(v => String(v._id || v.id) === String(id));
   if (!v) return;
@@ -279,54 +247,19 @@ function editVehicle(id) {
   openForm();
 }
 
-
-// ===============================
-// DELETE
-// ===============================
 async function deleteVehicle(id) {
   if (!confirm("Excluir veículo?")) return;
 
-  await fetch(`${API}/${id}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: localStorage.getItem("adminToken")
-    }
-  });
-
-  loadVehicles();
+  const token = localStorage.getItem("adminToken") || "";
+  try {
+    const res = await fetch(`${API}/${id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Erro ao excluir veículo");
+    loadVehicles();
+  } catch (err) {
+    alert(err.message);
+  }
 }
 
-
-
-async function load() {
-  const token = document.getElementById("token").value;
-  localStorage.setItem("adminToken", token);
-
-  const res = await fetch("/api/comments");
-  const comments = await res.json();
-
-  const list = document.getElementById("list");
-  list.innerHTML = "";
-
-  comments.forEach(c => {
-    list.innerHTML += `
-      <div style="margin-bottom:15px; padding:10px; border:1px solid #ccc">
-        <strong>${c.nome}</strong>
-        <p>${c.comentario}</p>
-        <small>${c.data}</small><br>
-        <button onclick="remove(${c.id})">❌ Excluir</button>
-      </div>
-    `;
-  });
-}
-
-async function remove(id) {
-  await fetch(`/api/admin/comments/${id}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: localStorage.getItem("adminToken")
-    }
-  });
-
-  load();
-}
