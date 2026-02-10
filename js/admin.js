@@ -1,11 +1,5 @@
-// ===============================
-// API
-// ===============================
 const API = window.API_VEHICLES;
 
-if (!API) {
-  console.error("API_VEHICLES não definida");
-}
 
 // ===============================
 // ELEMENTOS
@@ -43,7 +37,7 @@ let editingId = null;
 let currentPhotos = [];
 
 // ===============================
-// LOAD
+// LOAD (CORRIGIDO)
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   loadVehicles();
@@ -56,12 +50,10 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadVehicles() {
   try {
     const res = await fetch(API);
-    if (!res.ok) throw new Error("Erro ao buscar veículos");
     vehicles = await res.json();
     renderTable();
   } catch (err) {
-    console.error(err);
-    alert("Erro ao carregar veículos");
+    console.error("Erro ao carregar veículos:", err);
   }
 }
 
@@ -95,6 +87,7 @@ function renderTable(list = vehicles) {
   updateStats();
 }
 
+
 // ===============================
 // STATS
 // ===============================
@@ -111,7 +104,7 @@ function updateStats() {
 }
 
 // ===============================
-// BUSCA
+// BUSCA (CORRIGIDA)
 // ===============================
 function filterVehicles(text) {
   const search = text.toLowerCase();
@@ -133,14 +126,12 @@ function filterVehicles(text) {
 // ===============================
 function openForm() {
   vehicleModal.style.display = "flex";
-  document.body.style.overflow = "hidden";
 }
 
 function closeForm() {
   editingId = null;
   currentPhotos = [];
   vehicleModal.style.display = "none";
-  document.body.style.overflow = "auto";
 
   document
     .querySelectorAll("#vehicleModal input, textarea, select")
@@ -154,17 +145,17 @@ function closeForm() {
 // ===============================
 // UPLOAD DE IMAGENS
 // ===============================
-imageInput.addEventListener("change", () => {
+imageInput.addEventListener("change", async () => {
   const files = Array.from(imageInput.files);
 
-  files.forEach(file => {
+  for (const file of files) {
     const reader = new FileReader();
     reader.onload = () => {
       currentPhotos.push(reader.result);
       renderPreview();
     };
     reader.readAsDataURL(file);
-  });
+  }
 
   imageInput.value = "";
 });
@@ -188,7 +179,7 @@ function renderPreview() {
 }
 
 // ===============================
-// SAVE
+// SAVE MAIS RÁPIDO
 // ===============================
 async function saveVehicle() {
   if (!brand.value || !model.value || !year.value || !price.value) {
@@ -219,32 +210,45 @@ async function saveVehicle() {
     featured: featured.checked
   };
 
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: localStorage.getItem("adminToken")
-  };
+  // Se estiver editando
+  if (editingId) {
+    // Atualiza localmente primeiro
+    const index = vehicles.findIndex(v => String(v._id || v.id) === editingId);
+    if (index > -1) vehicles[index] = { ...vehicles[index], ...vehicle };
 
-  try {
-    if (editingId) {
-      await fetch(`${API}/${editingId}`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify(vehicle)
-      });
-    } else {
-      await fetch(API, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(vehicle)
-      });
-    }
+    renderTable(); // Atualiza tabela imediatamente
 
-    closeForm();
-    loadVehicles();
-  } catch (err) {
-    console.error(err);
-    alert("Erro ao salvar veículo");
+    // Atualiza no servidor
+    fetch(`${API}/${editingId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(vehicle)
+    }).catch(err => console.error("Erro ao atualizar:", err));
+  } else {
+    // Cria um ID temporário local para exibir imediatamente
+    const tempId = Date.now().toString();
+    const newVehicle = { ...vehicle, _id: tempId };
+
+    vehicles.push(newVehicle); // Adiciona localmente
+    renderTable(); // Atualiza tabela imediatamente
+
+    // Salva no servidor
+    fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(vehicle)
+    })
+      .then(res => res.json())
+      .then(saved => {
+        // Substitui o ID temporário pelo ID real do servidor
+        const index = vehicles.findIndex(v => v._id === tempId);
+        if (index > -1) vehicles[index] = saved;
+        renderTable();
+      })
+      .catch(err => console.error("Erro ao salvar:", err));
   }
+
+  closeForm();
 }
 
 // ===============================
@@ -275,30 +279,26 @@ function editVehicle(id) {
   openForm();
 }
 
+
 // ===============================
 // DELETE
 // ===============================
 async function deleteVehicle(id) {
   if (!confirm("Excluir veículo?")) return;
 
-  try {
-    await fetch(`${API}/${id}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: localStorage.getItem("adminToken")
-      }
-    });
+  await fetch(`${API}/${id}`, {
+    method: "DELETE",
+    headers: {
+      Authorization: localStorage.getItem("adminToken")
+    }
+  });
 
-    loadVehicles();
-  } catch (err) {
-    alert("Erro ao excluir veículo");
-  }
+  loadVehicles();
 }
 
-// ===============================
-// COMENTÁRIOS (ADMIN)
-// ===============================
-async function loadCommentsAdmin() {
+
+
+async function load() {
   const token = document.getElementById("token").value;
   localStorage.setItem("adminToken", token);
 
@@ -314,13 +314,13 @@ async function loadCommentsAdmin() {
         <strong>${c.nome}</strong>
         <p>${c.comentario}</p>
         <small>${c.data}</small><br>
-        <button onclick="removeComment('${c._id || c.id}')">❌ Excluir</button>
+        <button onclick="remove(${c.id})">❌ Excluir</button>
       </div>
     `;
   });
 }
 
-async function removeComment(id) {
+async function remove(id) {
   await fetch(`/api/admin/comments/${id}`, {
     method: "DELETE",
     headers: {
@@ -328,5 +328,5 @@ async function removeComment(id) {
     }
   });
 
-  loadCommentsAdmin();
+  load();
 }
