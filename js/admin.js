@@ -1,4 +1,5 @@
-const API = window.API_VEHICLES;
+const API = "https://seu-backend.onrender.com/vehicles";
+
 
 // ===============================
 // ELEMENTOS
