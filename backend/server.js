@@ -2,28 +2,18 @@ const express = require("express");
 const fs = require("fs");
 const path = require("path");
 const cors = require("cors");
-const { v4: uuidv4 } = require("uuid"); // npm i uuid
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const DB_FILE = path.join(__dirname, "db.json");
 
-// ===============================
-// MIDDLEWARE
-// ===============================
-app.use(express.json({ limit: "50mb" })); // limite ajustado
-app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+app.use(express.json({ limit: "100mb" }));
+app.use(express.urlencoded({ extended: true, limit: "100mb" }));
+app.use(cors());
 
-// CORS - apenas do seu frontend
-app.use(cors({
-  origin: "https://gkmotors-2.onrender.com", 
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true
-}));
-
-// ===============================
-// DB HELPERS
-// ===============================
+/* ===============================
+   DB HELPERS
+================================ */
 function readDB() {
   if (!fs.existsSync(DB_FILE)) {
     const initial = { vehicles: [] };
@@ -43,17 +33,9 @@ function saveDB(db) {
   fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2));
 }
 
-// ===============================
-// ROTAS
-// ===============================
-
-// STATUS
-app.get("/", (req, res) => {
-  res.json({
-    message: "Backend rodando 🚀",
-    totalVehicles: readDB().vehicles.length
-  });
-});
+/* ===============================
+   ROTAS
+================================ */
 
 // LISTAR
 app.get("/api/vehicles", (req, res) => {
@@ -64,13 +46,14 @@ app.get("/api/vehicles", (req, res) => {
 // CRIAR
 app.post("/api/vehicles", (req, res) => {
   const db = readDB();
-  const { brand } = req.body;
 
-  if (!brand) return res.status(400).json({ error: "Marca é obrigatória" });
+  if (!req.body || !req.body.brand) {
+    return res.status(400).json({ error: "Dados inválidos" });
+  }
 
   const vehicle = {
     ...req.body,
-    _id: uuidv4()
+    _id: Date.now().toString()
   };
 
   db.vehicles.push(vehicle);
@@ -85,11 +68,18 @@ app.put("/api/vehicles/:id", (req, res) => {
   const id = req.params.id;
 
   const index = db.vehicles.findIndex(v => v._id === id);
-  if (index === -1) return res.status(404).json({ error: "Veículo não encontrado" });
+  if (index === -1) {
+    return res.status(404).json({ error: "Veículo não encontrado" });
+  }
 
-  db.vehicles[index] = { ...db.vehicles[index], ...req.body, _id: id };
+  // 🔥 MESCLA, NÃO SOBRESCREVE
+  db.vehicles[index] = {
+    ...db.vehicles[index],
+    ...req.body,
+    _id: id
+  };
+
   saveDB(db);
-
   res.json(db.vehicles[index]);
 });
 
@@ -101,15 +91,22 @@ app.delete("/api/vehicles/:id", (req, res) => {
   const before = db.vehicles.length;
   db.vehicles = db.vehicles.filter(v => v._id !== id);
 
-  if (db.vehicles.length === before) return res.status(404).json({ error: "Veículo não encontrado" });
+  if (db.vehicles.length === before) {
+    return res.status(404).json({ error: "Veículo não encontrado" });
+  }
 
   saveDB(db);
   res.json({ success: true });
 });
 
-// ===============================
-// START SERVER
-// ===============================
+// STATUS
+app.get("/", (req, res) => {
+  res.json({
+    message: "Backend rodando 🚀",
+    totalVehicles: readDB().vehicles.length
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 API rodando na porta ${PORT}`);
 });
