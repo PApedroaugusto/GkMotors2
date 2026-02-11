@@ -282,11 +282,7 @@ body {
     max-width: 1200px;
   }
 
-.filters-hidden {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-}
+
 
   .filters-bar input,
   .filters-bar select,
