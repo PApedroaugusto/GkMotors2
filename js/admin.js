@@ -1,7 +1,7 @@
 // ===============================
 // CONFIGURAÇÃO DA API
 // ===============================
-const API = window.API_VEHICLES;
+const API = window.API_VEHICLES || "https://gkmotors.onrender.com/api/vehicles";
 
 // ===============================
 // ELEMENTOS DOM
@@ -60,10 +60,11 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadVehicles() {
   try {
     const res = await fetch(API);
+    if (!res.ok) throw new Error("Erro ao carregar veículos");
     vehicles = await res.json();
     renderTable();
   } catch (err) {
-    alert("Erro ao carregar veículos");
+    alert(err.message);
   }
 }
 
@@ -102,11 +103,12 @@ function renderTable(list = vehicles) {
 
 function updateStats() {
   totalVehicles.innerText = vehicles.length;
-  availableVehicles.innerText = vehicles.filter(v => v.status === "disponivel").length;
-  soldVehicles.innerText = vehicles.filter(v => v.status === "vendido").length;
+  availableVehicles.innerText = vehicles.filter(v => v.status.toLowerCase() === "disponível").length;
+  soldVehicles.innerText = vehicles.filter(v => v.status.toLowerCase() === "vendido").length;
 
   const total = vehicles.reduce((s, v) =>
-    v.status === "disponivel" ? s + Number(v.price) : s, 0);
+    v.status.toLowerCase() === "disponível" ? s + Number(v.price) : s, 0
+  );
 
   totalValue.innerText = `R$ ${total.toLocaleString("pt-BR")}`;
 }
@@ -151,7 +153,7 @@ async function handleImageUpload() {
       .from("vehicle-images")
       .upload(fileName, file);
 
-    if (error) return alert("Erro ao enviar imagem");
+    if (error) return alert("Erro ao enviar imagem: " + error.message);
 
     const { data } = sb.storage
       .from("vehicle-images")
@@ -185,8 +187,8 @@ function removePhoto(i) {
 async function saveVehicle(e) {
   e.preventDefault();
 
-  if (!brand.value || !model.value || !year.value || !price.value)
-    return alert("Preencha os campos obrigatórios");
+  if (!brand.value || !model.value || !year.value || !price.value || currentPhotos.length === 0)
+    return alert("Preencha os campos obrigatórios e envie pelo menos uma foto");
 
   const vehicle = {
     brand: brand.value,
@@ -201,18 +203,25 @@ async function saveVehicle(e) {
     description: description.value || null,
     photos: currentPhotos,
     image: currentPhotos[0],
-    status: status.value,
+    status: status.value || "Disponível",
     featured: featured.checked
   };
 
-  await fetch(editingId ? `${API}/${editingId}` : API, {
-    method: editingId ? "PUT" : "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(vehicle)
-  });
+  try {
+    const res = await fetch(editingId ? `${API}/${editingId}` : API, {
+      method: editingId ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(vehicle)
+    });
 
-  closeForm();
-  loadVehicles();
+    const data = await res.json();
+    if (!res.ok) return alert("Erro ao salvar veículo: " + data.error);
+
+    closeForm();
+    loadVehicles();
+  } catch (err) {
+    alert("Erro ao salvar veículo: " + err.message);
+  }
 }
 
 function editVehicle(id) {
@@ -222,11 +231,17 @@ function editVehicle(id) {
   editingId = id;
   currentPhotos = [...(v.photos || [])];
 
-  Object.assign(brand, { value: v.brand });
-  Object.assign(model, { value: v.model });
-  Object.assign(year, { value: v.year });
-  Object.assign(price, { value: v.price });
-  status.value = v.status;
+  brand.value = v.brand;
+  model.value = v.model;
+  year.value = v.year;
+  price.value = v.price;
+  power.value = v.power || "";
+  category.value = v.category || "";
+  fuel.value = v.fuel || "";
+  transmission.value = v.transmission || "";
+  color.value = v.color || "";
+  description.value = v.description || "";
+  status.value = v.status || "Disponível";
   featured.checked = v.featured;
 
   renderPreview();
@@ -235,8 +250,17 @@ function editVehicle(id) {
 
 async function deleteVehicle(id) {
   if (!confirm("Excluir veículo?")) return;
-  await fetch(`${API}/${id}`, { method: "DELETE" });
-  loadVehicles();
+
+  try {
+    const res = await fetch(`${API}/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const err = await res.json();
+      return alert("Erro ao excluir veículo: " + err.error);
+    }
+    loadVehicles();
+  } catch (err) {
+    alert("Erro ao excluir veículo: " + err.message);
+  }
 }
 
 // ===============================
