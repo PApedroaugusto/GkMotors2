@@ -97,8 +97,8 @@ function renderTable(list = vehicles) {
         <td>${v.status}</td>
         <td>${v.featured ? "⭐" : "-"}</td>
         <td>
-          <button onclick="editVehicle('${v.id}')">Editar</button>
-          <button onclick="deleteVehicle('${v.id}')">Excluir</button>
+          <button onclick="editVehicle(${v.id})">Editar</button>
+          <button onclick="deleteVehicle(${v.id})">Excluir</button>
         </td>
       </tr>
     `;
@@ -107,6 +107,9 @@ function renderTable(list = vehicles) {
   updateStats();
 }
 
+// ===============================
+// ESTATÍSTICAS
+// ===============================
 function updateStats() {
   totalVehicles.innerText = vehicles.length;
   availableVehicles.innerText = vehicles.filter(v => v.status.toLowerCase() === "disponível").length;
@@ -239,7 +242,8 @@ async function saveVehicle(e) {
 }
 
 function editVehicle(id) {
-  const v = vehicles.find(v => v.id === id);
+  id = Number(id); // garantir que seja number
+  const v = vehicles.find(v => Number(v.id) === id);
   if (!v) return;
 
   editingId = id;
@@ -263,6 +267,7 @@ function editVehicle(id) {
 }
 
 async function deleteVehicle(id) {
+  id = Number(id); // garantir que seja number
   if (!confirm("Excluir veículo?")) return;
 
   try {
