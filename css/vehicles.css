@@ -49,10 +49,9 @@ body {
 /* =============================== */
 .filters-bar {
   position: sticky;
-  top: 50px;
+  top: 20px;
   z-index: 50;
   width: 100%;
-  
   background: #ffffff;
   padding: 24px 32px;
   margin-bottom: 30px;
@@ -65,10 +64,11 @@ body {
 .filters-bar input,
 .filters-bar select,
 .filters-bar button {
+  
   padding: 16px;
   border-radius: 10px;
   border: 1px solid #e5e7eb;
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .filters-bar button {
@@ -83,23 +83,47 @@ body {
   background: #ea580c;
 }
 
+/* ================= FILTROS ESCONDIDOS ================= */
 .filters-hidden {
   display: none;
+  
 }
 
 .filters-hidden.active {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 20px; /* aumenta o espaçamento entre filtros */
   width: 100%;
-  
+  font-size: 18px; /* aumenta a fonte do texto */
   background: #f8fafc;
-  padding: 20px 32px;
+  padding: 25px 40px; /* aumenta o espaço interno */
   margin-bottom: 30px;
   border-top: 1px solid #e5e7eb;
   position: sticky;
   top: 150px;
 }
+
+
+
+#yearFilter {
+  margin-top: 5px;
+  font-size: 20px;
+
+}
+
+  #categoryFilter {
+    margin-top: 5px;
+    font-size: 20px;
+  }
+  #priceFilter {
+    margin-top: 5px;
+    font-size: 20px;
+  }
+  #sortFilter {
+    margin-top: 5px;
+    font-size: 20px;
+  }
+
 
 /* =============================== */
 /*       GRID DE VEÍCULOS          */
@@ -109,7 +133,7 @@ body {
   grid-template-columns: repeat(3, 1fr);
   gap: 32px;
   align-items: stretch;
-  
+  margin-top: 20px;
   
 }
 
