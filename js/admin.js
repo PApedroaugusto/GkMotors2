@@ -32,8 +32,11 @@ const soldVehicles = document.getElementById("soldVehicles");
 const totalValue = document.getElementById("totalValue");
 
 const newVehicleBtn = document.getElementById("NewVehicle");
-const Cancel = document.getElementById("Cancel");
+const Cancelbtn = document.getElementById("Cancel");
 const saveBtn = document.getElementById("Save");
+
+
+
 // ===============================
 // STATE
 // ===============================
