@@ -1,12 +1,12 @@
 // ===============================
 // VARIÁVEIS GLOBAIS
 // ===============================
-const sb = window.supabaseClient; // já deve estar inicializado no HTML
+const sb = window.supabaseClient; // Supabase já inicializado no HTML
 const VEHICLE_TABLE = "vehicles";
 let vehicles = [];
 
 // ===============================
-// LOAD INICIAL
+// INIT
 // ===============================
 document.addEventListener("DOMContentLoaded", async () => {
   await loadVehicles();     // carrega veículos do Supabase
@@ -54,17 +54,16 @@ function loadBrands() {
 // ===============================
 function loadBrandsFromStock() {
   const select = document.getElementById("brandSelect");
-  if (!select) return;
+  if (!select || !vehicles.length) return;
 
-  select.innerHTML = `<option value="">Todas as marcas</option>`;
+  const availableVehicles = vehicles.filter(v => v.status?.toLowerCase() === "disponível");
 
-  const availableVehicles = vehicles.filter(v => v.status.toLowerCase() === "disponível");
-
-  const brandsInStock = [...new Set(availableVehicles.map(v => v.brand).filter(Boolean))];
-  brandsInStock.sort();
+  const brandsInStock = [...new Set(availableVehicles.map(v => v.brand).filter(Boolean))].sort();
 
   brandsInStock.forEach(brand => {
-    select.innerHTML += `<option value="${brand}">${brand}</option>`;
+    if (!Array.from(select.options).some(o => o.value === brand)) {
+      select.innerHTML += `<option value="${brand}">${brand}</option>`;
+    }
   });
 }
 
@@ -95,7 +94,6 @@ async function loadVehicles() {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-
     vehicles = data || [];
   } catch (err) {
     console.error("Erro ao carregar veículos do Supabase:", err);
@@ -107,9 +105,9 @@ async function loadVehicles() {
 // ===============================
 function renderFeatured() {
   const container = document.getElementById("featuredVehicles");
-  if (!container) return;
+  if (!container || !vehicles.length) return;
 
-  const featuredVehicles = vehicles.filter(v => v.status.toLowerCase() === "disponível" && v.featured);
+  const featuredVehicles = vehicles.filter(v => v.status?.toLowerCase() === "disponível" && v.featured);
 
   container.innerHTML = "";
 
@@ -117,7 +115,7 @@ function renderFeatured() {
     const image = v.photos?.[0] || v.image || "img/no-image.png";
 
     container.innerHTML += `
-      <div class="card">
+      <div class="card" onclick="window.location.href='vehicle-details.html?id=${v.id}'">
         <img src="${image}" alt="${v.brand} ${v.model}" loading="lazy">
         <h3>${v.brand} ${v.model}</h3>
         <div class="card-specs">
@@ -125,7 +123,6 @@ function renderFeatured() {
           <span>⚡ ${v.power || "-"}</span>
         </div>
         <strong>R$ ${Number(v.price).toLocaleString("pt-BR")}</strong>
-        <a href="vehicle-details.html?id=${v.id}" class="details-btn">Ver detalhes</a>
       </div>
     `;
   });
