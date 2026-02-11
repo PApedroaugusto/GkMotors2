@@ -4,9 +4,13 @@ const path = require("path");
 const cors = require("cors");
 
 const app = express();
+
+// 🔥 PORTA DO RENDER (OU 3000 LOCAL)
 const PORT = process.env.PORT || 3000;
+
 const DB_FILE = path.join(__dirname, "db.json");
 
+// 🔥 SUPORTE A IMAGENS BASE64 GRANDES
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ extended: true, limit: "100mb" }));
 app.use(cors());
@@ -22,7 +26,8 @@ function readDB() {
   }
 
   try {
-    return JSON.parse(fs.readFileSync(DB_FILE, "utf-8"));
+    const data = fs.readFileSync(DB_FILE, "utf-8");
+    return data ? JSON.parse(data) : { vehicles: [] };
   } catch (err) {
     console.error("❌ ERRO NO DB.JSON:", err);
     return { vehicles: [] };
@@ -36,13 +41,11 @@ function saveDB(db) {
 /* ===============================
    ROTAS
 ================================ */
-
-// LISTAR
-app.get('/vehicles', (req, res) => {
-  res.json([...]); // seus veículos
+app.get("/api/vehicles", (req, res) => {
+  const db = readDB();
+  res.json(db.vehicles);
 });
 
-// CRIAR
 app.post("/api/vehicles", (req, res) => {
   const db = readDB();
 
@@ -52,7 +55,7 @@ app.post("/api/vehicles", (req, res) => {
 
   const vehicle = {
     ...req.body,
-    _id: Date.now().toString()
+    id: Date.now()
   };
 
   db.vehicles.push(vehicle);
@@ -61,51 +64,48 @@ app.post("/api/vehicles", (req, res) => {
   res.status(201).json(vehicle);
 });
 
-// EDITAR
 app.put("/api/vehicles/:id", (req, res) => {
   const db = readDB();
-  const id = req.params.id;
+  const id = Number(req.params.id);
 
-  const index = db.vehicles.findIndex(v => v._id === id);
+  if (isNaN(id)) {
+    return res.status(400).json({ error: "ID inválido" });
+  }
+
+  const index = db.vehicles.findIndex(v => v.id === id);
   if (index === -1) {
     return res.status(404).json({ error: "Veículo não encontrado" });
   }
 
-  // 🔥 MESCLA, NÃO SOBRESCREVE
-  db.vehicles[index] = {
-    ...db.vehicles[index],
-    ...req.body,
-    _id: id
-  };
-
+  db.vehicles[index] = { ...req.body, id };
   saveDB(db);
+
   res.json(db.vehicles[index]);
 });
 
-// EXCLUIR
 app.delete("/api/vehicles/:id", (req, res) => {
   const db = readDB();
-  const id = req.params.id;
+  const id = Number(req.params.id);
 
-  const before = db.vehicles.length;
-  db.vehicles = db.vehicles.filter(v => v._id !== id);
-
-  if (db.vehicles.length === before) {
-    return res.status(404).json({ error: "Veículo não encontrado" });
+  if (isNaN(id)) {
+    return res.status(400).json({ error: "ID inválido" });
   }
 
+  db.vehicles = db.vehicles.filter(v => v.id !== id);
   saveDB(db);
+
   res.json({ success: true });
 });
 
-// STATUS
 app.get("/", (req, res) => {
-  res.json({
+  res.status(200).json({
     message: "Backend rodando 🚀",
-    totalVehicles: readDB().vehicles.length
+    status: "ok"
   });
 });
 
+
+/* =============================== */
 app.listen(PORT, () => {
   console.log(`🚀 API rodando na porta ${PORT}`);
 });
