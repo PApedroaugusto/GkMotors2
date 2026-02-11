@@ -1,130 +1,194 @@
-/* ===============================
-   VEHICLES PAGE
-================================ */
-const API = window.API_VEHICLES;
+const sb = window.supabaseClient;
+const VEHICLE_TABLE = "vehicles";
 
-const grid = document.getElementById("vehiclesGrid");
+const vehiclesGrid = document.getElementById("vehiclesGrid");
+const vehicleCount = document.getElementById("vehicleCount");
+const searchInput = document.getElementById("searchInput");
 const brandFilter = document.getElementById("brandFilter");
 const yearFilter = document.getElementById("yearFilter");
 const categoryFilter = document.getElementById("categoryFilter");
 const priceFilter = document.getElementById("priceFilter");
 const sortFilter = document.getElementById("sortFilter");
-const searchInput = document.getElementById("searchInput");
-const count = document.getElementById("vehicleCount");
 
 let vehicles = [];
-let currentFiltered = [];
-let displayed = 0;
-const BATCH_SIZE = 6;
 
-document.addEventListener("DOMContentLoaded", init);
-
-async function init() {
-  try {
-    const res = await fetch(API);
-    vehicles = await res.json();
-    populateFilters();
-    applyUrlFilters();
-    applyFilters();
-  } catch (err) {
-    console.error("Erro ao carregar veículos:", err);
-  }
-}
-
-/* ===============================
-   FILTROS DA URL
-================================ */
-function applyUrlFilters() {
-  const params = new URLSearchParams(window.location.search);
-  const brandFromUrl = params.get("brand");
-  if (brandFromUrl) brandFilter.value = brandFromUrl;
-}
-
-/* ===============================
-   POPULAR FILTROS
-================================ */
-function populateFilters() {
-  const brands = [...new Set(vehicles.map(v => v.brand).filter(Boolean))].sort();
-  const years = [...new Set(vehicles.map(v => v.year).filter(Boolean))].sort((a,b) => b-a);
-  const categories = [...new Set(vehicles.map(v => v.category).filter(Boolean))].sort();
-
-  brandFilter.innerHTML = `<option value="">Todas as marcas</option>`;
-  yearFilter.innerHTML = `<option value="">Todos os anos</option>`;
-  categoryFilter.innerHTML = `<option value="">Todas categorias</option>`;
-
-  brands.forEach(b => brandFilter.innerHTML += `<option value="${b}">${b}</option>`);
-  years.forEach(y => yearFilter.innerHTML += `<option value="${y}">${y}</option>`);
-  categories.forEach(c => categoryFilter.innerHTML += `<option value="${c}">${c}</option>`);
-}
-
-/* ===============================
-   EVENTOS FILTROS
-================================ */
-[brandFilter, yearFilter, categoryFilter, priceFilter, sortFilter].forEach(el => el.addEventListener("change", applyFilters));
-searchInput.addEventListener("keyup", applyFilters);
-window.addEventListener("scroll", () => {
-  if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100) {
-    if (displayed < currentFiltered.length) renderVehicles(currentFiltered, false);
-  }
+// ===============================
+// INIT
+// ===============================
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadVehicles();
+  setupFilters();
+  setupSearch();
 });
 
-/* ===============================
-   APLICAR FILTROS
-================================ */
-function applyFilters() {
-  let result = vehicles.filter(v => v.status === "disponivel");
-  const search = searchInput.value.toLowerCase();
+// ===============================
+// LOAD VEÍCULOS
+// ===============================
+async function loadVehicles() {
+  try {
+    const { data, error } = await sb
+      .from(VEHICLE_TABLE)
+      .select("*")
+      .order("created_at", { ascending: false });
 
-  if (search) result = result.filter(v => v.brand?.toLowerCase().includes(search) || v.model?.toLowerCase().includes(search));
-  if (brandFilter.value) result = result.filter(v => v.brand === brandFilter.value);
-  if (yearFilter.value) result = result.filter(v => String(v.year) === yearFilter.value);
-  if (categoryFilter.value) result = result.filter(v => v.category === categoryFilter.value);
-  if (priceFilter.value) {
-    if (priceFilter.value.includes("-")) {
-      const [min, max] = priceFilter.value.split("-").map(Number);
-      result = result.filter(v => v.price >= min && v.price <= max);
-    } else result = result.filter(v => v.price >= Number(priceFilter.value));
+    if (error) throw error;
+    vehicles = data || [];
+
+    renderVehicles(vehicles);
+    updateVehicleCount();
+    populateFilterOptions();
+  } catch (err) {
+    console.error("Erro ao carregar veículos:", err);
+    if (vehicleCount) vehicleCount.innerText = "Erro ao carregar veículos";
   }
-  if (sortFilter.value === "price_asc") result.sort((a,b) => a.price - b.price);
-  if (sortFilter.value === "price_desc") result.sort((a,b) => b.price - a.price);
-  if (sortFilter.value === "newest") result.sort((a,b) => b.id - a.id);
-
-  renderVehicles(result, true);
 }
 
-/* ===============================
-   RENDER CARDS
-================================ */
-function renderVehicles(list, reset = true) {
-  if (reset) {
-    grid.innerHTML = "";
-    displayed = 0;
-    currentFiltered = list;
-  }
-  const nextBatch = currentFiltered.slice(displayed, displayed + BATCH_SIZE);
+// ===============================
+// RENDER VEÍCULOS
+// ===============================
+function renderVehicles(list) {
+  if (!vehiclesGrid) return;
+  vehiclesGrid.innerHTML = "";
 
-  nextBatch.forEach(vehicle => {
-    const image = vehicle.photos?.[0] || vehicle.image || "img/no-image.png";
+  if (!list.length) {
+    vehiclesGrid.innerHTML = "<p>Nenhum veículo encontrado.</p>";
+    return;
+  }
+
+  list.forEach(v => {
+    const img = v.photos?.[0] || "img/no-image.png";
+
     const card = document.createElement("div");
     card.className = "vehicle-card";
     card.innerHTML = `
-      <div class="image"><img src="${image}" alt="${vehicle.brand} ${vehicle.model}" loading="lazy"></div>
-      <div class="info">
-        <span class="brand">${vehicle.brand}</span>
-        <h3>${vehicle.model}</h3>
-        <div class="specs">
-          <span>📅 ${vehicle.year || "-"}</span>
-          <span>⚡ ${vehicle.power || "-"}</span>
-        </div>
-        <strong class="price">R$ ${Number(vehicle.price).toLocaleString("pt-BR")}</strong>
-      </div>
+      <img src="${img}" alt="${v.brand || ''} ${v.model || ''}">
+      <h3>${v.brand || '-'} ${v.model || '-'}</h3>
+      <p>📅 ${v.year || '-'}</p>
+      <p>⚡ ${v.power || '-'}</p>
+      <p>💰 R$ ${Number(v.price || 0).toLocaleString("pt-BR")}</p>
     `;
+
+    // REDIRECIONAR AO CLICAR
     card.addEventListener("click", () => {
-      window.location.href = `vehicle-details.html?id=${vehicle.id}`;
+      window.location.href = `vehicle-details.html?id=${v.id}`;
     });
-    grid.appendChild(card);
+
+    vehiclesGrid.appendChild(card);
+  });
+}
+
+// ===============================
+// COUNT
+// ===============================
+function updateVehicleCount() {
+  if (!vehicleCount) return;
+  vehicleCount.innerText = `Total de veículos: ${vehicles.length}`;
+}
+
+// ===============================
+// FILTROS
+// ===============================
+function populateFilterOptions() {
+  if (!vehicles.length) return;
+
+  const brands = [...new Set(vehicles.map(v => v.brand).filter(Boolean))].sort();
+  brands.forEach(b => {
+    if (!Array.from(brandFilter.options).some(o => o.value === b)) {
+      const option = document.createElement("option");
+      option.value = b;
+      option.textContent = b;
+      brandFilter.appendChild(option);
+    }
   });
 
-  displayed += nextBatch.length;
-  count.innerText = `${currentFiltered.length} veículos disponíveis`;
+  const years = [...new Set(vehicles.map(v => v.year).filter(Boolean))].sort((a,b)=>b-a);
+  years.forEach(y => {
+    if (!Array.from(yearFilter.options).some(o => o.value == y)) {
+      const option = document.createElement("option");
+      option.value = y;
+      option.textContent = y;
+      yearFilter.appendChild(option);
+    }
+  });
+
+  const categories = [...new Set(vehicles.map(v => v.category).filter(Boolean))].sort();
+  categories.forEach(c => {
+    if (!Array.from(categoryFilter.options).some(o => o.value === c)) {
+      const option = document.createElement("option");
+      option.value = c;
+      option.textContent = c;
+      categoryFilter.appendChild(option);
+    }
+  });
+}
+
+function setupFilters() {
+  brandFilter?.addEventListener("change", applyFilters);
+  yearFilter?.addEventListener("change", applyFilters);
+  categoryFilter?.addEventListener("change", applyFilters);
+  priceFilter?.addEventListener("change", applyFilters);
+  sortFilter?.addEventListener("change", applyFilters);
+}
+
+function clearFilters() {
+  brandFilter.value = "";
+  yearFilter.value = "";
+  categoryFilter.value = "";
+  priceFilter.value = "";
+  sortFilter.value = "newest";
+  searchInput.value = "";
+  renderVehicles(vehicles);
+}
+
+// ===============================
+// SEARCH
+// ===============================
+function setupSearch() {
+  searchInput?.addEventListener("input", () => applyFilters());
+}
+
+// ===============================
+// APLICAR FILTROS
+// ===============================
+function applyFilters() {
+  let filtered = [...vehicles];
+
+  const brandVal = brandFilter?.value;
+  const yearVal = yearFilter?.value;
+  const categoryVal = categoryFilter?.value;
+  const priceVal = priceFilter?.value;
+  const searchVal = searchInput?.value.toLowerCase();
+
+  if (brandVal) filtered = filtered.filter(v => v.brand === brandVal);
+  if (yearVal) filtered = filtered.filter(v => String(v.year) === String(yearVal));
+  if (categoryVal) filtered = filtered.filter(v => v.category === categoryVal);
+
+  if (priceVal) {
+    if (priceVal.includes("-")) {
+      const [min,max] = priceVal.split("-").map(Number);
+      filtered = filtered.filter(v => v.price >= min && v.price <= max);
+    } else if (priceVal === "200000") {
+      filtered = filtered.filter(v => v.price >= 200000);
+    }
+  }
+
+  if (searchVal) {
+    filtered = filtered.filter(v => `${v.brand || ''} ${v.model || ''}`.toLowerCase().includes(searchVal));
+  }
+
+  // SORT
+  if (sortFilter?.value === "price_asc") filtered.sort((a,b)=>a.price-b.price);
+  else if (sortFilter?.value === "price_desc") filtered.sort((a,b)=>b.price-a.price);
+  else filtered.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+
+  renderVehicles(filtered);
+}
+
+// ===============================
+// TOGGLE FILTROS
+// ===============================
+function toggleFilters() {
+  const filters = document.getElementById("filtersHidden");
+  if (!filters) return;
+  filters.style.display = filters.style.display === "block" ? "none" : "block";
 }

@@ -14,31 +14,25 @@
   <link rel="stylesheet" href="Layaut/header.css">
   
 </head>
-
 <body>
 
 <header class="site-header" id="siteHeader">
   <div class="header-container">
-
     <a href="index.html" class="logo">
       <div class="logo-box">🚗</div>
       <span class="logo-text"><strong>GK</strong>MOTORS</span>
     </a>
-
     <nav class="nav-desktop">
       <a href="index.html">Início</a>
       <a href="vehicles.html">Estoque</a>
       <a href="brands.html">Marcas</a>
       <a href="sell.html" class="sell-car">Venda seu carro</a>
     </nav>
-
     <div class="header-actions">
       <a href="login.html" class="btn-admin">Admin</a>
       <button class="menu-btn" onclick="toggleMenu()">☰</button>
     </div>
-
   </div>
-
   <div class="mobile-menu" id="mobileMenu">
     <a href="index.html">Início</a>
     <a href="vehicles.html">Estoque</a>
@@ -51,61 +45,37 @@
 <!-- ================= HERO ================= -->
 <section class="vehicles-hero">
   <h1>Nosso Estoque</h1>
-  <p id="vehicleCount"></p>
+  <p id="vehicleCount">Carregando...</p>
 </section>
 
 <!-- ================= CONTEÚDO ================= -->
 <main class="vehicles-container">
 
   <!-- FILTROS -->
+  <div class="filters-bar">
+    <input id="searchInput" type="text" placeholder="Buscar por marca ou modelo">
+    <select id="brandFilter"><option value="">Todas as marcas</option></select>
+    <button class="btn-filters" onclick="toggleFilters()">Filtros</button>
+    <button onclick="clearFilters()">Limpar</button>
+  </div>
 
-<div class="filters-bar">
-  <input
-    id="searchInput"
-    type="text"
-    placeholder="Buscar por marca ou modelo"
-  >
-
-  <select id="brandFilter">
-    <option value="">Todas as marcas</option>
-  </select>
-
-  <button class="btn-filters" onclick="toggleFilters()">
-    Filtros
-  </button>
-
-  <button onclick="clearFilters()">
-    Limpar
-  </button>
-</div>
-
-<!-- FILTROS ESCONDIDOS -->
-<aside id="filtersHidden" class="filters-hidden">
-  <select id="yearFilter">
-    <option value="">Todos os anos</option>
-  </select>
-
-  <select id="categoryFilter">
-    <option value="">Todas as categorias</option>
-  </select>
-
-  <select id="priceFilter">
-    <option value="">Todos os preços</option>
-    <option value="0-50000">Até R$ 50.000</option>
-    <option value="50000-100000">R$ 50.000 a R$ 100.000</option>
-    <option value="100000-200000">R$ 100.000 a R$ 200.000</option>
-    <option value="200000">Acima de R$ 200.000</option>
-  </select>
-
-  <select id="sortFilter">
-    <option value="newest">Mais recentes</option>
-    <option value="price_asc">Menor preço</option>
-    <option value="price_desc">Maior preço</option>
-  </select>
-</aside>
-
-
-
+  <!-- FILTROS ESCONDIDOS -->
+  <aside id="filtersHidden" class="filters-hidden">
+    <select id="yearFilter"><option value="">Todos os anos</option></select>
+    <select id="categoryFilter"><option value="">Todas as categorias</option></select>
+    <select id="priceFilter">
+      <option value="">Todos os preços</option>
+      <option value="0-50000">Até R$ 50.000</option>
+      <option value="50000-100000">R$ 50.000 a R$ 100.000</option>
+      <option value="100000-200000">R$ 100.000 a R$ 200.000</option>
+      <option value="200000">Acima de R$ 200.000</option>
+    </select>
+    <select id="sortFilter">
+      <option value="newest">Mais recentes</option>
+      <option value="price_asc">Menor preço</option>
+      <option value="price_desc">Maior preço</option>
+    </select>
+  </aside>
 
   <!-- GRID DE VEÍCULOS -->
   <section class="vehicles-grid" id="vehiclesGrid"></section>
@@ -116,10 +86,9 @@
 <footer class="site-footer">
   <div class="footer-container">
     <div>
-      <h3><strong class="carro">🚗</strong><strong class="GK">GK</strong>MOTORS</h3>
+      <h3>🚗 <strong>GK</strong>MOTORS</h3>
       <p>Sua concessionária premium de veículos seminovos e usados. Qualidade e confiança em cada negociação.</p>
     </div>
-
     <div>
       <h4>Navegação</h4>
       <a href="index.html">Início</a>
@@ -127,17 +96,13 @@
       <a href="brands.html">Marcas</a>
       <a href="sell.html" class="sell-car">Venda seu carro</a>
     </div>
-
     <div>
       <h4>Contato</h4>
       <p>📞 (62) 99284-7266</p>
-      <p>📍 Anapolis-GO - Avenida Brasil Sul, 792 vila Jussara</p>
-      <p>Segunda a Sexta das 8h às 18h
-        <br>Sábado das 8h às 12h
-      </p>
+      <p>📍 Anápolis-GO - Avenida Brasil Sul, 792 Vila Jussara</p>
+      <p>Seg–Sex 8h às 18h<br>Sáb 8h às 12h</p>
     </div>
   </div>
-
   <p class="copyright">
     © 2026 GK Motors. Todos os direitos reservados.
   </p>
@@ -153,12 +118,20 @@
   <button class="main-btn" onclick="toggleContacts()">💬</button>
 </div>
 
-<!-- SCRIPTS -->
- <script src="Layaut/floating-contact.js"></script>
-<script src="Layaut/header.js"></script>
- <script src="js/api.js"></script>
-<script src="js/vehicles.js"></script>
+<!-- ================= SCRIPTS ================= -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // Inicializa Supabase
+  window.supabaseClient = supabase.createClient(
+    "https://rgdhlezdnioegetsbbht.supabase.co",
+    "sb_publishable_sfphnkxHN86cTJ9Ua-Xp3w_VdBmlRfE"
+  );
+</script>
 
+<script src="Layaut/floating-contact.js"></script>
+<script src="Layaut/header.js"></script>
+<script src="js/api.js"></script>
+<script src="js/vehicles.js"></script>
 
 </body>
 </html>
