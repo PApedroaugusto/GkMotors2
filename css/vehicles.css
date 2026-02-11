@@ -6,7 +6,7 @@
 
 html, body {
   width: 100%;
-  overflow-x: hidden;
+  
 }
 
 
@@ -49,7 +49,7 @@ body {
 /* =============================== */
 .filters-bar {
   position: sticky;
-  top: 20px;
+  top: 50px;
   z-index: 50;
   width: 100%;
   background: #ffffff;
@@ -86,7 +86,7 @@ body {
 /* ================= FILTROS ESCONDIDOS ================= */
 .filters-hidden {
   display: none;
-  
+  position: sticky;
 }
 
 .filters-hidden.active {
@@ -99,7 +99,7 @@ body {
   padding: 25px 40px; /* aumenta o espaço interno */
   margin-bottom: 30px;
   border-top: 1px solid #e5e7eb;
-  position: sticky;
+  
   top: 150px;
 }
 
