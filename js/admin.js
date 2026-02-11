@@ -216,22 +216,22 @@ async function saveVehicle(e) {
   };
 
   try {
-    let res;
     if (editingId) {
-      res = await sb
+      // converter para number
+      const { data, error } = await sb
         .from(VEHICLE_TABLE)
         .update(vehicle)
-        .eq("id", editingId)
+        .eq("id", Number(editingId))
         .select()
         .single();
-      if (res.error) throw res.error;
+      if (error) throw error;
     } else {
-      res = await sb
+      const { data, error } = await sb
         .from(VEHICLE_TABLE)
         .insert(vehicle)
         .select()
         .single();
-      if (res.error) throw res.error;
+      if (error) throw error;
     }
 
     closeForm();
