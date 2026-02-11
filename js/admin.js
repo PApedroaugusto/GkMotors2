@@ -18,7 +18,6 @@ const year = document.getElementById("year");
 const price = document.getElementById("price");
 const power = document.getElementById("power");
 const category = document.getElementById("category");
-const rating = document.getElementById("rating");
 const fuel = document.getElementById("fuel");
 const transmission = document.getElementById("transmission");
 const color = document.getElementById("color");
@@ -32,10 +31,8 @@ const soldVehicles = document.getElementById("soldVehicles");
 const totalValue = document.getElementById("totalValue");
 
 const newVehicleBtn = document.getElementById("NewVehicle");
-const Cancelbtn = document.getElementById("Cancel");
+const Cancelbtn = document.getElementById("btnCancel");
 const saveBtn = document.getElementById("Save");
-
-
 
 // ===============================
 // STATE
@@ -45,60 +42,56 @@ let editingId = null;
 let currentPhotos = [];
 
 // ===============================
-// INICIALIZAÇÃO
+// INIT
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   loadVehicles();
 
-  // Eventos
-  searchInput.addEventListener("input", e => filterVehicles(e.target.value));
   newVehicleBtn.addEventListener("click", openForm);
-  btnCancel.addEventListener("click", closeForm);
+  Cancelbtn.addEventListener("click", closeForm);
   imageInput.addEventListener("change", handleImageUpload);
+  saveBtn.addEventListener("click", saveVehicle);
+  searchInput.addEventListener("input", e => filterVehicles(e.target.value));
 });
 
 // ===============================
-// FUNÇÕES PRINCIPAIS
+// API
 // ===============================
-
-// Carrega veículos do backend
 async function loadVehicles() {
   try {
     const res = await fetch(API);
-    if (!res.ok) throw new Error("Erro ao carregar veículos");
     vehicles = await res.json();
     renderTable();
   } catch (err) {
-    console.error(err);
-    alert(err.message);
+    alert("Erro ao carregar veículos");
   }
 }
 
-// Renderiza tabela de veículos
+// ===============================
+// RENDER
+// ===============================
 function renderTable(list = vehicles) {
   vehicleTable.innerHTML = "";
 
   list.forEach(v => {
-    const id = v._id || v.id;
-    const vehicleImage = v.photos?.[0] || v.image || "";
+    const img = v.photos?.[0] || "";
 
     vehicleTable.innerHTML += `
       <tr>
         <td>
-          <img src="${vehicleImage}" alt="${v.model}" 
-               style="width:80px;height:60px;object-fit:cover;margin-right:10px;vertical-align:middle;">
+          <img src="${img}" style="width:80px;height:60px;object-fit:cover">
           <strong>${v.brand} ${v.model}</strong>
         </td>
         <td>${v.year}</td>
         <td>${v.category || "-"}</td>
         <td>${v.fuel || "-"}</td>
         <td>${v.transmission || "-"}</td>
-        <td>R$ ${Number(v.price || 0).toLocaleString("pt-BR")}</td>
+        <td>R$ ${Number(v.price).toLocaleString("pt-BR")}</td>
         <td>${v.status}</td>
         <td>${v.featured ? "⭐" : "-"}</td>
         <td>
-          <button onclick="editVehicle('${id}')">Editar</button>
-          <button onclick="deleteVehicle('${id}')">Excluir</button>
+          <button onclick="editVehicle('${v.id}')">Editar</button>
+          <button onclick="deleteVehicle('${v.id}')">Excluir</button>
         </td>
       </tr>
     `;
@@ -107,32 +100,23 @@ function renderTable(list = vehicles) {
   updateStats();
 }
 
-// Atualiza estatísticas
 function updateStats() {
   totalVehicles.innerText = vehicles.length;
   availableVehicles.innerText = vehicles.filter(v => v.status === "disponivel").length;
   soldVehicles.innerText = vehicles.filter(v => v.status === "vendido").length;
 
-  const total = vehicles.reduce((sum, v) => {
-    return v.status === "disponivel" ? sum + Number(v.price || 0) : sum;
-  }, 0);
+  const total = vehicles.reduce((s, v) =>
+    v.status === "disponivel" ? s + Number(v.price) : s, 0);
 
   totalValue.innerText = `R$ ${total.toLocaleString("pt-BR")}`;
 }
 
-// Filtra veículos na tabela
 function filterVehicles(text) {
-  const search = text.toLowerCase();
-  const filtered = vehicles.filter(v =>
-    v.brand?.toLowerCase().includes(search) ||
-    v.model?.toLowerCase().includes(search) ||
-    v.year?.toString().includes(search) ||
-    v.category?.toLowerCase().includes(search) ||
-    v.fuel?.toLowerCase().includes(search) ||
-    v.transmission?.toLowerCase().includes(search)
+  renderTable(
+    vehicles.filter(v =>
+      `${v.brand} ${v.model} ${v.year}`.toLowerCase().includes(text.toLowerCase())
+    )
   );
-
-  renderTable(filtered);
 }
 
 // ===============================
@@ -146,73 +130,70 @@ function closeForm() {
   editingId = null;
   currentPhotos = [];
   vehicleModal.style.display = "none";
-
-  document.querySelectorAll("#vehicleModal input, textarea, select").forEach(el => el.value = "");
   previewContainer.innerHTML = "";
   imageInput.value = "";
   featured.checked = false;
+
+  document.querySelectorAll("#vehicleModal input, textarea").forEach(i => i.value = "");
 }
 
 // ===============================
-// IMAGENS
+// UPLOAD SUPABASE
 // ===============================
-function handleImageUpload() {
-  const files = Array.from(imageInput.files);
-  files.forEach(file => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      currentPhotos.push(reader.result);
-      renderPreview();
-    };
-    reader.readAsDataURL(file);
-  });
+async function handleImageUpload() {
+  const sb = window.supabaseClient;
+  if (!sb) return alert("Supabase não carregado");
+
+  for (const file of imageInput.files) {
+    const fileName = `${Date.now()}-${file.name}`;
+
+    const { error } = await sb.storage
+      .from("vehicle-images")
+      .upload(fileName, file);
+
+    if (error) return alert("Erro ao enviar imagem");
+
+    const { data } = sb.storage
+      .from("vehicle-images")
+      .getPublicUrl(fileName);
+
+    currentPhotos.push(data.publicUrl);
+  }
+
+  renderPreview();
   imageInput.value = "";
 }
 
 function renderPreview() {
   previewContainer.innerHTML = "";
-
-  currentPhotos.forEach((photo, index) => {
-    const img = document.createElement("img");
-    img.src = photo;
-    img.style.width = "100px";
-    img.style.height = "80px";
-    img.style.objectFit = "cover";
-    img.style.cursor = "pointer";
-    img.onclick = () => {
-      currentPhotos.splice(index, 1);
-      renderPreview();
-    };
-    previewContainer.appendChild(img);
+  currentPhotos.forEach((p, i) => {
+    previewContainer.innerHTML += `
+      <img src="${p}" style="width:100px;height:80px;cursor:pointer"
+        onclick="removePhoto(${i})">
+    `;
   });
 }
 
-// ===============================
-// CRUD VEÍCULOS
-// ===============================
-async function saveVehicle() {
-  if (!brand.value || !model.value || !year.value || !price.value) {
-    alert("Preencha marca, modelo, ano e preço");
-    return;
-  }
+function removePhoto(i) {
+  currentPhotos.splice(i, 1);
+  renderPreview();
+}
 
-  if (!currentPhotos.length) {
-    alert("Adicione pelo menos uma foto");
-    return;
-  }
+// ===============================
+// CRUD
+// ===============================
+async function saveVehicle(e) {
+  e.preventDefault();
 
-  const token = localStorage.getItem("adminToken") || "";
-  const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`
-  };
+  if (!brand.value || !model.value || !year.value || !price.value)
+    return alert("Preencha os campos obrigatórios");
 
   const vehicle = {
-    brand: brand.value.trim(),
-    model: model.value.trim(),
+    brand: brand.value,
+    model: model.value,
     year: Number(year.value),
     price: Number(price.value),
-    power: power.value ? Number(power.value) : null,
+    power: power.value || null,
     category: category.value || null,
     fuel: fuel.value || null,
     transmission: transmission.value || null,
@@ -224,51 +205,27 @@ async function saveVehicle() {
     featured: featured.checked
   };
 
-  try {
-    let res;
-    if (editingId) {
-      res = await fetch(`${API}/${editingId}`, {
-        method: "PUT",
-        headers,
-        body: JSON.stringify(vehicle)
-      });
-    } else {
-      res = await fetch(API, {
-        method: "POST",
-        headers,
-        body: JSON.stringify(vehicle)
-      });
-    }
+  await fetch(editingId ? `${API}/${editingId}` : API, {
+    method: editingId ? "PUT" : "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(vehicle)
+  });
 
-    if (!res.ok) throw new Error("Erro ao salvar veículo");
-
-    await loadVehicles();
-    closeForm();
-  } catch (err) {
-    console.error(err);
-    alert(err.message);
-  }
+  closeForm();
+  loadVehicles();
 }
 
-// Editar veículo
 function editVehicle(id) {
-  const v = vehicles.find(v => String(v._id || v.id) === String(id));
+  const v = vehicles.find(v => v.id === id);
   if (!v) return;
 
-  editingId = v._id || v.id;
+  editingId = id;
   currentPhotos = [...(v.photos || [])];
 
-  brand.value = v.brand;
-  model.value = v.model;
-  year.value = v.year;
-  price.value = v.price;
-  power.value = v.power || "";
-  category.value = v.category || "";
-  rating.value = v.rating || "";
-  fuel.value = v.fuel || "";
-  transmission.value = v.transmission || "";
-  color.value = v.color || "";
-  description.value = v.description || "";
+  Object.assign(brand, { value: v.brand });
+  Object.assign(model, { value: v.model });
+  Object.assign(year, { value: v.year });
+  Object.assign(price, { value: v.price });
   status.value = v.status;
   featured.checked = v.featured;
 
@@ -276,26 +233,16 @@ function editVehicle(id) {
   openForm();
 }
 
-// Excluir veículo
 async function deleteVehicle(id) {
   if (!confirm("Excluir veículo?")) return;
-
-  const token = localStorage.getItem("adminToken") || "";
-  try {
-    const res = await fetch(`${API}/${id}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    if (!res.ok) throw new Error("Erro ao excluir veículo");
-    await loadVehicles();
-  } catch (err) {
-    alert(err.message);
-  }
+  await fetch(`${API}/${id}`, { method: "DELETE" });
+  loadVehicles();
 }
 
 // ===============================
-// EXPORTAR FUNÇÕES PARA BOTÕES INLINE
+// EXPORT
 // ===============================
 window.editVehicle = editVehicle;
 window.deleteVehicle = deleteVehicle;
 window.saveVehicle = saveVehicle;
+window.removePhoto = removePhoto;
