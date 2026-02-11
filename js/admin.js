@@ -1,8 +1,10 @@
-
+// ===============================
+// CONFIGURAÇÃO DA API
+// ===============================
 const API = window.API_VEHICLES;
 
 // ===============================
-// ELEMENTOS
+// ELEMENTOS DOM
 // ===============================
 const vehicleTable = document.getElementById("vehicleTable");
 const vehicleModal = document.getElementById("vehicleModal");
@@ -14,6 +16,7 @@ const brand = document.getElementById("brand");
 const model = document.getElementById("model");
 const year = document.getElementById("year");
 const price = document.getElementById("price");
+const power = document.getElementById("power");
 const category = document.getElementById("category");
 const rating = document.getElementById("rating");
 const fuel = document.getElementById("fuel");
@@ -22,12 +25,14 @@ const color = document.getElementById("color");
 const description = document.getElementById("description");
 const status = document.getElementById("status");
 const featured = document.getElementById("featured");
-const power = document.getElementById("power");
 
 const totalVehicles = document.getElementById("totalVehicles");
 const availableVehicles = document.getElementById("availableVehicles");
 const soldVehicles = document.getElementById("soldVehicles");
 const totalValue = document.getElementById("totalValue");
+
+const newVehicleBtn = document.getElementById("NewVehicle");
+const btnCancel = document.getElementById("btnCancel");
 
 // ===============================
 // STATE
@@ -37,19 +42,23 @@ let editingId = null;
 let currentPhotos = [];
 
 // ===============================
-// LOAD
+// INICIALIZAÇÃO
 // ===============================
 document.addEventListener("DOMContentLoaded", () => {
   loadVehicles();
 
-  searchInput.addEventListener("input", e => {
-    filterVehicles(e.target.value);
-  });
+  // Eventos
+  searchInput.addEventListener("input", e => filterVehicles(e.target.value));
+  newVehicleBtn.addEventListener("click", openForm);
+  btnCancel.addEventListener("click", closeForm);
+  imageInput.addEventListener("change", handleImageUpload);
 });
 
 // ===============================
-// FUNÇÕES DE VEÍCULOS
+// FUNÇÕES PRINCIPAIS
 // ===============================
+
+// Carrega veículos do backend
 async function loadVehicles() {
   try {
     const res = await fetch(API);
@@ -62,13 +71,12 @@ async function loadVehicles() {
   }
 }
 
+// Renderiza tabela de veículos
 function renderTable(list = vehicles) {
   vehicleTable.innerHTML = "";
 
   list.forEach(v => {
     const id = v._id || v.id;
-
-    // Pega a primeira imagem do veículo ou deixa vazio se não existir
     const vehicleImage = v.photos?.[0] || v.image || "";
 
     vehicleTable.innerHTML += `
@@ -96,7 +104,7 @@ function renderTable(list = vehicles) {
   updateStats();
 }
 
-
+// Atualiza estatísticas
 function updateStats() {
   totalVehicles.innerText = vehicles.length;
   availableVehicles.innerText = vehicles.filter(v => v.status === "disponivel").length;
@@ -109,9 +117,9 @@ function updateStats() {
   totalValue.innerText = `R$ ${total.toLocaleString("pt-BR")}`;
 }
 
+// Filtra veículos na tabela
 function filterVehicles(text) {
   const search = text.toLowerCase();
-
   const filtered = vehicles.filter(v =>
     v.brand?.toLowerCase().includes(search) ||
     v.model?.toLowerCase().includes(search) ||
@@ -124,6 +132,9 @@ function filterVehicles(text) {
   renderTable(filtered);
 }
 
+// ===============================
+// MODAL
+// ===============================
 function openForm() {
   vehicleModal.style.display = "flex";
 }
@@ -139,7 +150,10 @@ function closeForm() {
   featured.checked = false;
 }
 
-imageInput.addEventListener("change", () => {
+// ===============================
+// IMAGENS
+// ===============================
+function handleImageUpload() {
   const files = Array.from(imageInput.files);
   files.forEach(file => {
     const reader = new FileReader();
@@ -150,7 +164,7 @@ imageInput.addEventListener("change", () => {
     reader.readAsDataURL(file);
   });
   imageInput.value = "";
-});
+}
 
 function renderPreview() {
   previewContainer.innerHTML = "";
@@ -170,6 +184,9 @@ function renderPreview() {
   });
 }
 
+// ===============================
+// CRUD VEÍCULOS
+// ===============================
 async function saveVehicle() {
   if (!brand.value || !model.value || !year.value || !price.value) {
     alert("Preencha marca, modelo, ano e preço");
@@ -223,7 +240,7 @@ async function saveVehicle() {
 
     if (!res.ok) throw new Error("Erro ao salvar veículo");
 
-    loadVehicles();
+    await loadVehicles();
     closeForm();
   } catch (err) {
     console.error(err);
@@ -231,6 +248,7 @@ async function saveVehicle() {
   }
 }
 
+// Editar veículo
 function editVehicle(id) {
   const v = vehicles.find(v => String(v._id || v.id) === String(id));
   if (!v) return;
@@ -256,6 +274,7 @@ function editVehicle(id) {
   openForm();
 }
 
+// Excluir veículo
 async function deleteVehicle(id) {
   if (!confirm("Excluir veículo?")) return;
 
@@ -266,9 +285,15 @@ async function deleteVehicle(id) {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (!res.ok) throw new Error("Erro ao excluir veículo");
-    loadVehicles();
+    await loadVehicles();
   } catch (err) {
     alert(err.message);
   }
 }
 
+// ===============================
+// EXPORTAR FUNÇÕES PARA BOTÕES INLINE
+// ===============================
+window.editVehicle = editVehicle;
+window.deleteVehicle = deleteVehicle;
+window.saveVehicle = saveVehicle;
