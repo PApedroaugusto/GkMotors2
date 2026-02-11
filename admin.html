@@ -2,7 +2,9 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel Administrativo</title>
+
   <link rel="stylesheet" href="css/admin.css">
   <link rel="stylesheet" href="Layaut/floating-contact.css">
 </head>
@@ -15,34 +17,19 @@
 
 <main class="container">
 
-  <!-- STATS -->
   <section class="stats">
-    <div class="stat">
-      <span>Total</span>
-      <strong id="totalVehicles">0</strong>
-    </div>
-    <div class="stat">
-      <span>Disponíveis</span>
-      <strong id="availableVehicles">0</strong>
-    </div>
-    <div class="stat">
-      <span>Vendidos</span>
-      <strong id="soldVehicles">0</strong>
-    </div>
-    <div class="stat">
-      <span>Valor em estoque</span>
-      <strong id="totalValue">R$ 0</strong>
-    </div>
+    <div class="stat"><span>Total</span><strong id="totalVehicles">0</strong></div>
+    <div class="stat"><span>Disponíveis</span><strong id="availableVehicles">0</strong></div>
+    <div class="stat"><span>Vendidos</span><strong id="soldVehicles">0</strong></div>
+    <div class="stat"><span>Valor em estoque</span><strong id="totalValue">R$ 0</strong></div>
   </section>
 
-  <!-- ACTIONS -->
   <section class="actions">
     <input type="text" id="searchInput" placeholder="Buscar veículo...">
-    <button onclick="openForm()">+ Novo Veículo</button>
+    <button id="btnNewVehicle">+ Novo Veículo</button>
   </section>
 
-  <!-- TABLE -->
-  <table>
+  <table class="table-wrapper">
     <thead>
       <tr>
         <th>Veículo</th>
@@ -53,75 +40,50 @@
         <th>Preço</th>
         <th>Status</th>
         <th>Destaque</th>
+        <th>Ações</th>
       </tr>
     </thead>
     <tbody id="vehicleTable"></tbody>
   </table>
-
 </main>
 
-<!-- MODAL FORM -->
+<!-- MODAL -->
 <div class="modal" id="vehicleModal">
   <div class="modal-content">
     <h2 id="formTitle">Novo Veículo</h2>
 
-    <!-- BÁSICO -->
     <input id="brand" placeholder="Marca">
     <input id="model" placeholder="Modelo">
-    <input id="year" type="text" placeholder="Ano">
+    <input id="year" placeholder="Ano">
     <input id="price" type="number" placeholder="Preço">
-    <input type="number" id="power" placeholder="Potência (cv)">
+    <input id="power" type="number" placeholder="Potência (cv)">
 
-
-
-    <!-- EXTRA -->
-    <input id="category" placeholder="Categoria (Ex: Médio, SUV)">
-    <input id="rating" type="number" min="1" max="5" placeholder="Avaliação (1 a 5)">
-    <input id="fuel" placeholder="Combustível (Flex, Gasolina...)">
-    <input id="transmission" placeholder="Câmbio (Manual, Automático)">
+    <input id="category" placeholder="Categoria">
+    <input id="fuel" placeholder="Combustível">
+    <input id="transmission" placeholder="Câmbio">
     <input id="color" placeholder="Cor">
 
-    <!-- DESCRIÇÃO -->
-    <textarea class="vehicle-description" id="description" placeholder="Descrição do veículo" rows="4"></textarea>
+    <textarea id="description" rows="4" placeholder="Descrição"></textarea>
 
-   
+    <input type="file" id="imageInput" multiple accept="image/*">
+    <div id="previewContainer" style="display:flex;gap:10px;flex-wrap:wrap"></div>
 
-    <!-- UPLOAD MÚLTIPLO -->
-    <input
-      type="file"
-      id="imageInput"
-      accept="image/*"
-      multiple
-    >
-
-    <!-- PRÉVIA DAS IMAGENS -->
-    <div
-      id="previewContainer"
-      style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;"
-    ></div>
-
-    <!-- STATUS -->
     <select id="status">
       <option value="disponivel">Disponível</option>
       <option value="vendido">Vendido</option>
     </select>
 
-    <!-- DESTAQUE -->
-    <label style="display:flex; gap:8px; align-items:center; margin-top:10px;">
-      <input type="checkbox" id="featured">
-      Veículo em destaque (aparece na Home)
+    <label>
+      <input type="checkbox" id="featured"> Veículo em destaque
     </label>
 
     <div class="modal-actions">
-      <button onclick="saveVehicle()">Salvar</button>
-      <button class="cancel" onclick="closeForm()">Cancelar</button>
+      <button id="btnSave">Salvar</button>
+      <button class="cancel" id="btnCancel">Cancelar</button>
     </div>
   </div>
 </div>
-
-<!-- SCRIPT -->
- <script src="js/api.js"></script>
+<script src="js/api.js"></script>
 <script src="js/admin.js"></script>
-
 </body>
 </html>
