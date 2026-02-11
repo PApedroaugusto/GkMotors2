@@ -84,6 +84,11 @@ body {
   overflow-x: auto;
 }
 
+tbody{
+  overflow-x: auto; 
+  max-width: 100%;
+}
+
 table {
   max-width: 700px;
   overflow-x: auto;
