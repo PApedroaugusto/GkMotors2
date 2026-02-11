@@ -15,6 +15,7 @@
 </header>
 
 <button id="logout">Sair</button>
+
 <main class="container">
 
   <section class="stats">
@@ -67,7 +68,7 @@
     <div id="previewContainer" style="display:flex;gap:10px;flex-wrap:wrap"></div>
 
     <select id="status">
-      <option value="disponivel">Disponível</option>
+      <option value="disponível">Disponível</option>
       <option value="vendido">Vendido</option>
     </select>
 
@@ -82,25 +83,29 @@
   </div>
 </div>
 
-
-<!-- Supabase CDN -->
+<!-- Supabase JS CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<!-- Inicialização Supabase -->
+<script>
+  window.supabaseClient = supabase.createClient(
+    'https://rgdhlezdnioegetsbbht.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd…YwNH0.JwkcqOaEcRmO1N5SHJdN0lfjKurVIKrPE-XKMNWHyjk'
+  );
+</script>
 
-
-<!-- Admin JS -->
-
+<!-- Seus Scripts -->
 <script src="js/supabase.js"></script>
- <script src="js/api.js"></script>
- <script src="js/guard.js"></script>
+<script src="js/api.js"></script>
+<script src="js/guard.js"></script>
 <script src="js/admin.js"></script>
 
- <script>
-    document.getElementById("logout").onclick = async () => {
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    };
-  </script>
+<script>
+  document.getElementById("logout").onclick = async () => {
+    await window.supabaseClient.auth.signOut();
+    window.location.href = "login.html";
+  };
+</script>
 
 </body>
 </html>
