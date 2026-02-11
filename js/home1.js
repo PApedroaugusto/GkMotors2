@@ -1,14 +1,15 @@
 // ===============================
 // VARIÁVEIS GLOBAIS
 // ===============================
-const API = window.API_VEHICLES;
+const sb = window.supabaseClient; // já deve estar inicializado no HTML
+const VEHICLE_TABLE = "vehicles";
 let vehicles = [];
 
 // ===============================
 // LOAD INICIAL
 // ===============================
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadVehicles();     // carrega veículos
+  await loadVehicles();     // carrega veículos do Supabase
   loadBrands();             // carrega marcas fixas
   loadBrandsFromStock();    // carrega marcas disponíveis no estoque
   renderFeatured();         // mostra destaques
@@ -34,20 +35,16 @@ function loadBrands() {
   const select = document.getElementById("brandSelect");
   if (!grid || !select) return;
 
-  // limpa antes de popular
   grid.innerHTML = "";
   select.innerHTML = `<option value="">Todas as marcas</option>`;
 
   BRANDS.forEach(b => {
-    // Grid de marcas
     grid.innerHTML += `
       <a href="vehicles.html?brand=${encodeURIComponent(b.name)}" class="brand">
         <img src="${b.logo}" alt="${b.name}">
         <span class="brand-name">${b.name}</span>
       </a>
     `;
-
-    // Select
     select.innerHTML += `<option value="${b.name}">${b.name}</option>`;
   });
 }
@@ -59,15 +56,11 @@ function loadBrandsFromStock() {
   const select = document.getElementById("brandSelect");
   if (!select) return;
 
-  // limpa select antes de popular
   select.innerHTML = `<option value="">Todas as marcas</option>`;
 
-  const availableVehicles = vehicles.filter(v => v.status === "disponivel");
+  const availableVehicles = vehicles.filter(v => v.status.toLowerCase() === "disponível");
 
-  // marcas únicas no estoque
   const brandsInStock = [...new Set(availableVehicles.map(v => v.brand).filter(Boolean))];
-
-  // ordena alfabeticamente
   brandsInStock.sort();
 
   brandsInStock.forEach(brand => {
@@ -86,22 +79,26 @@ function setupSearch() {
   button.addEventListener("click", () => {
     const brand = brandSelect.value;
     let url = "vehicles.html";
-    if (brand) {
-      url += `?brand=${encodeURIComponent(brand)}`;
-    }
+    if (brand) url += `?brand=${encodeURIComponent(brand)}`;
     window.location.href = url;
   });
 }
 
 // ===============================
-// CARREGAR VEÍCULOS
+// CARREGAR VEÍCULOS DO SUPABASE
 // ===============================
 async function loadVehicles() {
   try {
-    const res = await fetch(API);
-    vehicles = await res.json();
+    const { data, error } = await sb
+      .from(VEHICLE_TABLE)
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    vehicles = data || [];
   } catch (err) {
-    console.error("Erro ao carregar veículos:", err);
+    console.error("Erro ao carregar veículos do Supabase:", err);
   }
 }
 
@@ -112,13 +109,11 @@ function renderFeatured() {
   const container = document.getElementById("featuredVehicles");
   if (!container) return;
 
-  // filtra veículos destacados e disponíveis
-  const featured = vehicles.filter(v => v.status === "disponivel" && v.featured);
+  const featuredVehicles = vehicles.filter(v => v.status.toLowerCase() === "disponível" && v.featured);
 
   container.innerHTML = "";
 
-  // mostra no máximo 6 veículos
-  featured.slice(0, 6).forEach(v => {
+  featuredVehicles.slice(0, 6).forEach(v => {
     const image = v.photos?.[0] || v.image || "img/no-image.png";
 
     container.innerHTML += `

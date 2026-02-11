@@ -46,11 +46,9 @@
   </div>
 </header>
 
-
-
 <!-- ================= HERO ================= -->
 <section class="hero">
-<div class="hero-image">
+  <div class="hero-image">
     <img src="ChatGPT Image 25 de jan. de 2026, 09_45_44.png" alt="GK Motors">
   </div>
 
@@ -61,11 +59,11 @@
     <br>
     Qualidade e confiança em cada negociação.
   </p>
-<br class="space">
+  <br class="space">
+
   <div class="search-box">
     <select id="brandSelect">
       <option value="">Marca</option>
-      
     </select>
 
     <button id="searchBtn">Buscar</button>
@@ -85,9 +83,6 @@
       <div class="stat-label">Anos experiência</div>
     </div>
   </div>
-
- 
-  
 </section>
 
 <!-- ================= MARCAS ================= -->
@@ -118,42 +113,30 @@
   </div>
 </section>
 
-<!-- localização -->
- <section class="localizacao">
+<!-- ================= LOCALIZAÇÃO ================= -->
+<section class="localizacao">
   <div class="localizacao-container">
-
-<div class="localizacao-info">
+    <div class="localizacao-info">
       <h2>📍 Nossa Localização</h2>
-    </div>
-
-  </div>
-
-    <div class="localizacao-mapa">
-      
-      <!-- MAPA -->
-      <iframe
-        src="https://www.google.com/maps?q=-16.3371639,-48.9527674&z=18&output=embed"
-        allowfullscreen
-        loading="lazy"
-        referrerpolicy="no-referrer-when-downgrade">
-      </iframe>
-
-      <!-- BOTÃO DENTRO DO MAPA -->
-      <a 
-        href="https://www.google.com/maps/dir/?api=1&destination=-16.3371639,-48.9527674"
-        target="_blank"
-        class="btn-mapa">
-        🚗 Ver rota
-      </a>
-
-    </div>
-
-<div class="localizacao-info">
-    
       <p>Anápolis - GO</p>
       <p>Avenida Brasil Sul, 792 – Vila Jussara</p>
     </div>
+  </div>
 
+  <div class="localizacao-mapa">
+    <iframe
+      src="https://www.google.com/maps?q=-16.3371639,-48.9527674&z=18&output=embed"
+      allowfullscreen
+      loading="lazy"
+      referrerpolicy="no-referrer-when-downgrade">
+    </iframe>
+
+    <a 
+      href="https://www.google.com/maps/dir/?api=1&destination=-16.3371639,-48.9527674"
+      target="_blank"
+      class="btn-mapa">
+      🚗 Ver rota
+    </a>
   </div>
 </section>
 
@@ -169,8 +152,6 @@
 
   <div id="commentsList"></div>
 </section>
-
-
 
 <!-- ================= FOOTER ================= -->
 <footer class="site-footer">
@@ -210,15 +191,24 @@
   <button class="main-btn" onclick="toggleContacts()">💬</button>
 </div>
 
-<!-- JS -->
- <script src="js/api.js"></script>
+<!-- ================= SCRIPTS ================= -->
+<!-- Supabase JS -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
- <script src="js/comments.js"></script>
+<script>
+  // Inicializa Supabase
+  window.supabaseClient = supabase.createClient(
+    "https://rgdhlezdnioegetsbbht.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzd…YwNH0.JwkcqOaEcRmO1N5SHJdN0lfjKurVIKrPE-XKMNWHyjk"
+  );
+</script>
+
+<!-- Seus scripts -->
+<script src="js/api.js"></script>
+<script src="js/comments.js"></script>
 <script src="js/home1.js"></script>
 <script src="Layaut/floating-contact.js"></script>
 <script src="Layaut/header.js"></script>
-
-
 
 </body>
 </html>
