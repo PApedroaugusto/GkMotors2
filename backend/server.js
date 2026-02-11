@@ -38,9 +38,8 @@ function saveDB(db) {
 ================================ */
 
 // LISTAR
-app.get("/api/vehicles", (req, res) => {
-  const db = readDB();
-  res.json(db.vehicles);
+app.get('/vehicles', (req, res) => {
+  res.json([...]); // seus veículos
 });
 
 // CRIAR
