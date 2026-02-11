@@ -67,9 +67,16 @@ function renderTable(list = vehicles) {
   list.forEach(v => {
     const id = v._id || v.id;
 
+    // Pega a primeira imagem do veículo ou deixa vazio se não existir
+    const vehicleImage = v.photos?.[0] || v.image || "";
+
     vehicleTable.innerHTML += `
       <tr>
-        <td><strong>${v.brand} ${v.model}</strong></td>
+        <td>
+          <img src="${vehicleImage}" alt="${v.model}" 
+               style="width:80px;height:60px;object-fit:cover;margin-right:10px;vertical-align:middle;">
+          <strong>${v.brand} ${v.model}</strong>
+        </td>
         <td>${v.year}</td>
         <td>${v.category || "-"}</td>
         <td>${v.fuel || "-"}</td>
@@ -87,6 +94,7 @@ function renderTable(list = vehicles) {
 
   updateStats();
 }
+
 
 function updateStats() {
   totalVehicles.innerText = vehicles.length;
