@@ -31,9 +31,9 @@ const availableVehicles = document.getElementById("availableVehicles");
 const soldVehicles = document.getElementById("soldVehicles");
 const totalValue = document.getElementById("totalValue");
 
-const newVehicle = document.getElementById("NewVehicle");
-const btnCancel = document.getElementById("btnCancel");
-
+const newVehicleBtn = document.getElementById("NewVehicle");
+const Cancel = document.getElementById("Cancel");
+const saveBtn = document.getElementById("Save");
 // ===============================
 // STATE
 // ===============================
@@ -211,7 +211,6 @@ async function saveVehicle() {
     price: Number(price.value),
     power: power.value ? Number(power.value) : null,
     category: category.value || null,
-    rating: rating.value ? Number(rating.value) : null,
     fuel: fuel.value || null,
     transmission: transmission.value || null,
     color: color.value || null,
