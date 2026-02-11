@@ -1,8 +1,9 @@
 // ===============================
-// CONFIGURAÇÃO DA API
+// CONFIGURAÇÃO SUPABASE
 // ===============================
-const API = window.API_VEHICLES || "https://gkmotors.onrender.com/api/vehicles";
-const UPLOAD_API = "https://gkmotors.onrender.com/api/vehicles/upload";
+const sb = window.supabaseClient; // Supabase Client deve estar definido no HTML
+const VEHICLE_TABLE = "vehicles";
+const VEHICLE_STORAGE = "vehicle-images";
 
 // ===============================
 // ELEMENTOS DOM
@@ -40,8 +41,7 @@ const saveBtn = document.getElementById("Save");
 // ===============================
 let vehicles = [];
 let editingId = null;
-let currentFiles = [];   // arquivos selecionados
-let currentPhotos = [];  // URLs públicas
+let currentPhotos = [];
 
 // ===============================
 // INIT
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   newVehicleBtn.addEventListener("click", openForm);
   Cancelbtn.addEventListener("click", closeForm);
-  imageInput.addEventListener("change", handleImageSelect);
+  imageInput.addEventListener("change", handleImageUpload);
   saveBtn.addEventListener("click", saveVehicle);
   searchInput.addEventListener("input", e => filterVehicles(e.target.value));
 });
@@ -61,17 +61,21 @@ document.addEventListener("DOMContentLoaded", () => {
 // ===============================
 async function loadVehicles() {
   try {
-    const res = await fetch(API);
-    if (!res.ok) throw new Error("Erro ao carregar veículos");
-    vehicles = await res.json();
+    const { data, error } = await sb
+      .from(VEHICLE_TABLE)
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    vehicles = data;
     renderTable();
   } catch (err) {
-    alert(err.message);
+    alert("Erro ao carregar veículos: " + err.message);
   }
 }
 
 // ===============================
-// RENDER TABELA
+// RENDER TABLE
 // ===============================
 function renderTable(list = vehicles) {
   vehicleTable.innerHTML = "";
@@ -132,7 +136,6 @@ function openForm() {
 
 function closeForm() {
   editingId = null;
-  currentFiles = [];
   currentPhotos = [];
   vehicleModal.style.display = "none";
   previewContainer.innerHTML = "";
@@ -143,99 +146,104 @@ function closeForm() {
 }
 
 // ===============================
-// SELEÇÃO DE IMAGENS
+// UPLOAD FOTOS SUPABASE
 // ===============================
-function handleImageSelect() {
-  currentFiles = Array.from(imageInput.files);
-  renderPreviewFiles();
+async function handleImageUpload() {
+  if (!sb) return alert("Supabase não carregado");
+
+  for (const file of imageInput.files) {
+    const fileName = `${Date.now()}-${file.name}`;
+
+    const { error } = await sb.storage
+      .from(VEHICLE_STORAGE)
+      .upload(fileName, file);
+
+    if (error) return alert("Erro ao enviar imagem: " + error.message);
+
+    const { data } = sb.storage
+      .from(VEHICLE_STORAGE)
+      .getPublicUrl(fileName);
+
+    currentPhotos.push(data.publicUrl);
+  }
+
+  renderPreview();
+  imageInput.value = "";
 }
 
-function renderPreviewFiles() {
+function renderPreview() {
   previewContainer.innerHTML = "";
-  currentFiles.forEach((file, i) => {
-    const url = URL.createObjectURL(file);
+  currentPhotos.forEach((p, i) => {
     previewContainer.innerHTML += `
-      <img src="${url}" style="width:100px;height:80px;cursor:pointer"
-        onclick="removeFile(${i})">
+      <img src="${p}" style="width:100px;height:80px;cursor:pointer"
+        onclick="removePhoto(${i})">
     `;
   });
 }
 
-function removeFile(i) {
-  currentFiles.splice(i, 1);
-  renderPreviewFiles();
+function removePhoto(i) {
+  currentPhotos.splice(i, 1);
+  renderPreview();
 }
 
 // ===============================
-// SAVE VEHICLE
+// CRUD SUPABASE
 // ===============================
 async function saveVehicle(e) {
   e.preventDefault();
 
-  if (!brand.value || !model.value || !year.value || !price.value || currentFiles.length === 0)
+  if (!brand.value || !model.value || !year.value || !price.value || currentPhotos.length === 0)
     return alert("Preencha os campos obrigatórios e envie pelo menos uma foto");
 
-  try {
-    // 1️⃣ Upload das fotos para backend
-    const formData = new FormData();
-    currentFiles.forEach(file => formData.append("photos", file));
+  const vehicle = {
+    brand: brand.value,
+    model: model.value,
+    year: Number(year.value),
+    price: Number(price.value),
+    power: power.value || null,
+    category: category.value || null,
+    fuel: fuel.value || null,
+    transmission: transmission.value || null,
+    color: color.value || null,
+    description: description.value || null,
+    photos: currentPhotos,
+    image: currentPhotos[0],
+    status: status.value || "Disponível",
+    featured: featured.checked
+  };
 
-    const uploadRes = await fetch(UPLOAD_API, { method: "POST", body: formData });
-    if (!uploadRes.ok) {
-      const err = await uploadRes.json();
-      throw new Error(err.error || "Erro ao enviar fotos");
+  try {
+    let res;
+    if (editingId) {
+      res = await sb
+        .from(VEHICLE_TABLE)
+        .update(vehicle)
+        .eq("id", editingId)
+        .select()
+        .single();
+      if (res.error) throw res.error;
+    } else {
+      res = await sb
+        .from(VEHICLE_TABLE)
+        .insert(vehicle)
+        .select()
+        .single();
+      if (res.error) throw res.error;
     }
 
-    const { uploadedUrls } = await uploadRes.json();
-    currentPhotos = uploadedUrls;
-
-    // 2️⃣ Montar objeto veículo
-    const vehicle = {
-      brand: brand.value,
-      model: model.value,
-      year: Number(year.value),
-      price: Number(price.value),
-      power: power.value || null,
-      category: category.value || null,
-      fuel: fuel.value || null,
-      transmission: transmission.value || null,
-      color: color.value || null,
-      description: description.value || null,
-      photos: currentPhotos,
-      image: currentPhotos[0],
-      status: status.value || "Disponível",
-      featured: featured.checked
-    };
-
-    // 3️⃣ Enviar POST para backend
-    const res = await fetch(editingId ? `${API}/${editingId}` : API, {
-      method: editingId ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(vehicle)
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Erro ao salvar veículo");
-
-    alert("Veículo salvo com sucesso!");
     closeForm();
     loadVehicles();
-
   } catch (err) {
     alert("Erro ao salvar veículo: " + err.message);
   }
 }
 
-// ===============================
-// EDIT / DELETE
-// ===============================
 function editVehicle(id) {
   const v = vehicles.find(v => v.id === id);
   if (!v) return;
 
   editingId = id;
   currentPhotos = [...(v.photos || [])];
-  currentFiles = []; // resetar arquivos, só URLs já existentes
 
   brand.value = v.brand;
   model.value = v.model;
@@ -250,34 +258,20 @@ function editVehicle(id) {
   status.value = v.status || "Disponível";
   featured.checked = v.featured;
 
-  renderPreviewUrls();
+  renderPreview();
   openForm();
-}
-
-function renderPreviewUrls() {
-  previewContainer.innerHTML = "";
-  currentPhotos.forEach((url, i) => {
-    previewContainer.innerHTML += `
-      <img src="${url}" style="width:100px;height:80px;cursor:pointer"
-        onclick="removePhotoUrl(${i})">
-    `;
-  });
-}
-
-function removePhotoUrl(i) {
-  currentPhotos.splice(i, 1);
-  renderPreviewUrls();
 }
 
 async function deleteVehicle(id) {
   if (!confirm("Excluir veículo?")) return;
 
   try {
-    const res = await fetch(`${API}/${id}`, { method: "DELETE" });
-    if (!res.ok) {
-      const err = await res.json();
-      return alert("Erro ao excluir veículo: " + err.error);
-    }
+    const { error } = await sb
+      .from(VEHICLE_TABLE)
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
     loadVehicles();
   } catch (err) {
     alert("Erro ao excluir veículo: " + err.message);
@@ -290,5 +284,4 @@ async function deleteVehicle(id) {
 window.editVehicle = editVehicle;
 window.deleteVehicle = deleteVehicle;
 window.saveVehicle = saveVehicle;
-window.removeFile = removeFile;
-window.removePhotoUrl = removePhotoUrl;
+window.removePhoto = removePhoto;
