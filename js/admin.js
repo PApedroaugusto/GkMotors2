@@ -31,7 +31,7 @@ const availableVehicles = document.getElementById("availableVehicles");
 const soldVehicles = document.getElementById("soldVehicles");
 const totalValue = document.getElementById("totalValue");
 
-const newVehicleBtn = document.getElementById("NewVehicle");
+const newVehicle = document.getElementById("NewVehicle");
 const btnCancel = document.getElementById("btnCancel");
 
 // ===============================
