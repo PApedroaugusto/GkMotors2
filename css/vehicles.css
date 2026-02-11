@@ -87,6 +87,7 @@ body {
 .filters-hidden {
   display: none;
   position: sticky;
+  top: 150px;
 }
 
 .filters-hidden.active {
@@ -100,7 +101,7 @@ body {
   margin-bottom: 30px;
   border-top: 1px solid #e5e7eb;
   
-  top: 150px;
+ 
 }
 
 
@@ -114,6 +115,7 @@ body {
   #categoryFilter {
     margin-top: 5px;
     font-size: 20px;
+
   }
   #priceFilter {
     margin-top: 5px;
