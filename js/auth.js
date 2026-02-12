@@ -1,36 +1,33 @@
-const ADMIN_USER = "Gkmotors";
-const ADMIN_PASS = "admin12345";
-const AUTH_KEY = "admin_logged";
+document.addEventListener("DOMContentLoaded", () => {
+  const sb = window.supabaseClient;
+  const form = document.getElementById("login-form");
+  const errorMsg = document.getElementById("error");
 
-const form = document.getElementById("login-form");
-const error = document.getElementById("error");
-
-// 🔹 LOGIN
-if (form) {
-  form.addEventListener("submit", e => {
-    e.preventDefault();
-
-    const user = document.getElementById("username").value;
-    const pass = document.getElementById("password").value;
-
-    if (user === ADMIN_USER && pass === ADMIN_PASS) {
-      localStorage.setItem(AUTH_KEY, "true");
-      window.location.href = "admin.html";
-    } else {
-      error.classList.remove("hidden");
-    }
-  });
-}
-
-// 🔹 PROTEÇÃO DO ADMIN
-function protectAdmin() {
-  if (localStorage.getItem(AUTH_KEY) !== "true") {
-    window.location.href = "login.html";
+  if (!sb) {
+    console.error("Supabase não inicializado");
+    return;
   }
-}
 
-// 🔹 LOGOUT
-function logout() {
-  localStorage.removeItem(AUTH_KEY);
-  window.location.href = "login.html";
-}
+  if (form) {
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      const { data, error } = await sb.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        console.error(error.message);
+        errorMsg.classList.remove("hidden");
+        return;
+      }
+
+      // Login OK
+      window.location.replace("admin.html");
+    });
+  }
+});

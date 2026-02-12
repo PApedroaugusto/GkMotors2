@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel Administrativo</title>
   <link rel="stylesheet" href="css/admin.css">
-  <link rel="stylesheet" href="Layaut/floating-contact.css">
 </head>
 <body>
 
@@ -15,23 +14,21 @@
   <button id="logoutBtn">Sair</button>
 </header>
 
-
-
 <main class="container">
 
   <section class="stats">
     <div class="stat"><span>Total</span><strong id="totalVehicles">0</strong></div>
     <div class="stat"><span>Disponíveis</span><strong id="availableVehicles">0</strong></div>
     <div class="stat"><span>Vendidos</span><strong id="soldVehicles">0</strong></div>
-    <div class="stat"><span>Valor em estoque</span><strong id="totalValue">R$ 0</strong></div>
+    <div class="stat"><span>Valor</span><strong id="totalValue">R$ 0</strong></div>
   </section>
 
   <section class="actions">
-    <input type="text" id="searchInput" placeholder="Buscar veículo...">
+    <input type="text" id="searchInput" placeholder="Buscar veículo">
     <button id="NewVehicle">+ Novo Veículo</button>
   </section>
 
-  <table class="table-wrapper">
+  <table>
     <thead>
       <tr>
         <th>Veículo</th>
@@ -52,21 +49,19 @@
 <!-- MODAL -->
 <div class="modal" id="vehicleModal">
   <div class="modal-content">
-    <h2 id="formTitle">Novo Veículo</h2>
-
     <input id="brand" placeholder="Marca">
     <input id="model" placeholder="Modelo">
     <input id="year" placeholder="Ano">
     <input id="price" type="number" placeholder="Preço">
-    <input id="power" type="text" placeholder="Potência (cv)">
+    <input id="power" placeholder="Potência">
     <input id="category" placeholder="Categoria">
     <input id="fuel" placeholder="Combustível">
     <input id="transmission" placeholder="Câmbio">
     <input id="color" placeholder="Cor">
-    <textarea id="description" rows="4" placeholder="Descrição"></textarea>
+    <textarea id="description" placeholder="Descrição"></textarea>
 
-    <input type="file" id="imageInput" multiple accept="image/*">
-    <div id="previewContainer" style="display:flex;gap:10px;flex-wrap:wrap"></div>
+    <input type="file" id="imageInput" multiple>
+    <div id="previewContainer"></div>
 
     <select id="status">
       <option value="disponível">Disponível</option>
@@ -74,58 +69,19 @@
     </select>
 
     <label>
-      <input type="checkbox" id="featured"> Veículo em destaque
+      <input type="checkbox" id="featured"> Destaque
     </label>
 
-    <div class="modal-actions">
-      <button id="Save">Salvar</button>
-      <button class="cancel" id="btnCancel">Cancelar</button>
-    </div>
+    <button id="Save">Salvar</button>
+    <button id="btnCancel">Cancelar</button>
   </div>
 </div>
 
-
-<script>
-  const AUTH_KEY = "admin_logged";
-
-  // 🔹 PROTEÇÃO DO ADMIN
-  if (localStorage.getItem(AUTH_KEY) !== "true") {
-    window.location.replace("login.html");
-  }
-
-  // 🔹 Evita voltar para admin após logout
-  window.history.pushState(null, null, window.location.href);
-  window.onpopstate = function () {
-    if (localStorage.getItem(AUTH_KEY) !== "true") {
-      window.location.replace("login.html");
-    }
-  };
-
-  // 🔹 LOGOUT
-  const logoutBtn = document.getElementById("logoutBtn");
-  logoutBtn.addEventListener("click", () => {
-    localStorage.removeItem(AUTH_KEY);
-    window.location.replace("login.html");
-  });
-</script>
-
-<!-- Supabase JS CDN -->
+<!-- SUPABASE -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<!-- Inicialização Supabase -->
-<script>
-  window.supabaseClient = supabase.createClient(
-    'https://rgdhlezdnioegetsbbht.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJnZGhsZXpkbmlvZWdldHNiYmh0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3OTc2MDQsImV4cCI6MjA4NjM3MzYwNH0.JwkcqOaEcRmO1N5SHJdN0lfjKurVIKrPE-XKMNWHyjk'
-  );
-</script>
-
-<!-- Seus Scripts -->
 <script src="js/supabase.js"></script>
-<script src="js/api.js"></script>
 <script src="js/guard.js"></script>
 <script src="js/admin.js"></script>
-
 
 </body>
 </html>

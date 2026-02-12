@@ -1,7 +1,6 @@
 // ===============================
-// CONFIGURAÇÃO SUPABASE
+// CONFIGURAÇÃO
 // ===============================
-const sb = window.supabaseClient; // Supabase Client deve estar definido no HTML
 const VEHICLE_TABLE = "vehicles";
 const VEHICLE_STORAGE = "vehicle-images";
 
@@ -33,9 +32,9 @@ const soldVehicles = document.getElementById("soldVehicles");
 const totalValue = document.getElementById("totalValue");
 
 const newVehicleBtn = document.getElementById("NewVehicle");
-const Cancelbtn = document.getElementById("btnCancel");
+const cancelBtn = document.getElementById("btnCancel");
 const saveBtn = document.getElementById("Save");
-
+const logoutBtn = document.getElementById("logoutBtn");
 
 // ===============================
 // STATE
@@ -51,28 +50,40 @@ document.addEventListener("DOMContentLoaded", () => {
   loadVehicles();
 
   newVehicleBtn.addEventListener("click", openForm);
-  Cancelbtn.addEventListener("click", closeForm);
+  cancelBtn.addEventListener("click", closeForm);
   imageInput.addEventListener("change", handleImageUpload);
   saveBtn.addEventListener("click", saveVehicle);
-  searchInput.addEventListener("input", e => filterVehicles(e.target.value));
+  searchInput.addEventListener("input", e =>
+    filterVehicles(e.target.value)
+  );
+
+  logoutBtn.addEventListener("click", logout);
 });
 
 // ===============================
-// CARREGAR VEÍCULOS
+// AUTH
+// ===============================
+async function logout() {
+  await window.supabaseClient.auth.signOut();
+  window.location.replace("login.html");
+}
+
+// ===============================
+// LOAD VEHICLES
 // ===============================
 async function loadVehicles() {
-  try {
-    const { data, error } = await sb
-      .from(VEHICLE_TABLE)
-      .select("*")
-      .order("created_at", { ascending: false });
+  const { data, error } = await window.supabaseClient
+    .from(VEHICLE_TABLE)
+    .select("*")
+    .order("created_at", { ascending: false });
 
-    if (error) throw error;
-    vehicles = data;
-    renderTable();
-  } catch (err) {
-    alert("Erro ao carregar veículos: " + err.message);
+  if (error) {
+    alert("Erro ao carregar veículos");
+    return;
   }
+
+  vehicles = data;
+  renderTable();
 }
 
 // ===============================
@@ -82,12 +93,10 @@ function renderTable(list = vehicles) {
   vehicleTable.innerHTML = "";
 
   list.forEach(v => {
-    const img = v.photos?.[0] || "";
-
     vehicleTable.innerHTML += `
       <tr>
         <td>
-          <img src="${img}" style="width:80px;height:60px;object-fit:cover">
+          <img src="${v.photos?.[0] || ""}" style="width:80px;height:60px;object-fit:cover">
           <strong>${v.brand} ${v.model}</strong>
         </td>
         <td>${v.year}</td>
@@ -109,15 +118,19 @@ function renderTable(list = vehicles) {
 }
 
 // ===============================
-// ESTATÍSTICAS
+// STATS
 // ===============================
 function updateStats() {
   totalVehicles.innerText = vehicles.length;
-  availableVehicles.innerText = vehicles.filter(v => v.status.toLowerCase() === "disponível").length;
-  soldVehicles.innerText = vehicles.filter(v => v.status.toLowerCase() === "vendido").length;
+  availableVehicles.innerText =
+    vehicles.filter(v => v.status === "disponível").length;
+  soldVehicles.innerText =
+    vehicles.filter(v => v.status === "vendido").length;
 
-  const total = vehicles.reduce((s, v) =>
-    v.status.toLowerCase() === "disponível" ? s + Number(v.price) : s, 0
+  const total = vehicles.reduce(
+    (sum, v) =>
+      v.status === "disponível" ? sum + Number(v.price) : sum,
+    0
   );
 
   totalValue.innerText = `R$ ${total.toLocaleString("pt-BR")}`;
@@ -126,7 +139,9 @@ function updateStats() {
 function filterVehicles(text) {
   renderTable(
     vehicles.filter(v =>
-      `${v.brand} ${v.model} ${v.year}`.toLowerCase().includes(text.toLowerCase())
+      `${v.brand} ${v.model} ${v.year}`
+        .toLowerCase()
+        .includes(text.toLowerCase())
     )
   );
 }
@@ -146,25 +161,28 @@ function closeForm() {
   imageInput.value = "";
   featured.checked = false;
 
-  document.querySelectorAll("#vehicleModal input, textarea").forEach(i => i.value = "");
+  document
+    .querySelectorAll("#vehicleModal input, textarea")
+    .forEach(i => (i.value = ""));
 }
 
 // ===============================
-// UPLOAD FOTOS SUPABASE
+// UPLOAD IMAGES
 // ===============================
 async function handleImageUpload() {
-  if (!sb) return alert("Supabase não carregado");
-
   for (const file of imageInput.files) {
     const fileName = `${Date.now()}-${file.name}`;
 
-    const { error } = await sb.storage
+    const { error } = await window.supabaseClient.storage
       .from(VEHICLE_STORAGE)
       .upload(fileName, file);
 
-    if (error) return alert("Erro ao enviar imagem: " + error.message);
+    if (error) {
+      alert("Erro ao enviar imagem");
+      return;
+    }
 
-    const { data } = sb.storage
+    const { data } = window.supabaseClient.storage
       .from(VEHICLE_STORAGE)
       .getPublicUrl(fileName);
 
@@ -191,20 +209,17 @@ function removePhoto(i) {
 }
 
 // ===============================
-// CRUD SUPABASE
+// SAVE VEHICLE
 // ===============================
 async function saveVehicle(e) {
   e.preventDefault();
 
-  if (!brand.value || !model.value || !year.value || !price.value || currentPhotos.length === 0)
-    return alert("Preencha os campos obrigatórios e envie pelo menos uma foto");
-
   const vehicle = {
     brand: brand.value,
     model: model.value,
-    year: year.value.trim(),
+    year: year.value,
     price: Number(price.value),
-   power: power.value.trim(),
+    power: power.value || null,
     category: category.value || null,
     fuel: fuel.value || null,
     transmission: transmission.value || null,
@@ -212,39 +227,30 @@ async function saveVehicle(e) {
     description: description.value || null,
     photos: currentPhotos,
     image: currentPhotos[0],
-    status: status.value || "Disponível",
+    status: status.value,
     featured: featured.checked
   };
 
-  try {
-    if (editingId) {
-      // converter para number
-      const { data, error } = await sb
-        .from(VEHICLE_TABLE)
-        .update(vehicle)
-        .eq("id", Number(editingId))
-        .select()
-        .single();
-      if (error) throw error;
-    } else {
-      const { data, error } = await sb
-        .from(VEHICLE_TABLE)
-        .insert(vehicle)
-        .select()
-        .single();
-      if (error) throw error;
-    }
-
-    closeForm();
-    loadVehicles();
-  } catch (err) {
-    alert("Erro ao salvar veículo: " + err.message);
+  if (editingId) {
+    await window.supabaseClient
+      .from(VEHICLE_TABLE)
+      .update(vehicle)
+      .eq("id", editingId);
+  } else {
+    await window.supabaseClient
+      .from(VEHICLE_TABLE)
+      .insert(vehicle);
   }
+
+  closeForm();
+  loadVehicles();
 }
 
+// ===============================
+// EDIT / DELETE
+// ===============================
 function editVehicle(id) {
-  id = Number(id); // garantir que seja number
-  const v = vehicles.find(v => Number(v.id) === id);
+  const v = vehicles.find(v => v.id === id);
   if (!v) return;
 
   editingId = id;
@@ -260,7 +266,7 @@ function editVehicle(id) {
   transmission.value = v.transmission || "";
   color.value = v.color || "";
   description.value = v.description || "";
-  status.value = v.status || "Disponível";
+  status.value = v.status;
   featured.checked = v.featured;
 
   renderPreview();
@@ -268,28 +274,16 @@ function editVehicle(id) {
 }
 
 async function deleteVehicle(id) {
-  id = Number(id); // garantir que seja number
   if (!confirm("Excluir veículo?")) return;
 
-  try {
-    const { error } = await sb
-      .from(VEHICLE_TABLE)
-      .delete()
-      .eq("id", id);
+  await window.supabaseClient
+    .from(VEHICLE_TABLE)
+    .delete()
+    .eq("id", id);
 
-    if (error) throw error;
-    loadVehicles();
-  } catch (err) {
-    alert("Erro ao excluir veículo: " + err.message);
-  }
+  loadVehicles();
 }
 
-// ===============================
-// EXPORT
-// ===============================
 window.editVehicle = editVehicle;
 window.deleteVehicle = deleteVehicle;
-window.saveVehicle = saveVehicle;
 window.removePhoto = removePhoto;
-
-
