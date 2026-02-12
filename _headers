@@ -1,0 +1,70 @@
+# ===============================
+# HTML PRINCIPAL
+# Não cacheia muito para sempre ter a versão atualizada
+# ===============================
+/index.html
+  Cache-Control: no-cache
+
+/vehicles.html
+  Cache-Control: no-cache
+
+/sell.html
+  Cache-Control: no-cache
+
+/vehicle-details.html
+  Cache-Control: no-cache
+
+/login.html
+  Cache-Control: no-cache
+
+# ===============================
+# CSS
+# Pode ter cache longo, pois mudam raramente
+# ===============================
+/css/*
+  Cache-Control: public, max-age=604800, immutable
+
+/Layaut/*
+  Cache-Control: public, max-age=604800, immutable
+
+# ===============================
+# JS
+# Pode ter cache longo, pois mudam raramente
+# ===============================
+/js/*
+  Cache-Control: public, max-age=604800, immutable
+
+/Layaut/*.js
+  Cache-Control: public, max-age=604800, immutable
+
+# ===============================
+# IMAGENS
+# Cache longo, pois imagens mudam pouco
+# ===============================
+/img/*
+  Cache-Control: public, max-age=2592000, immutable
+
+/assets/brands/*
+  Cache-Control: public, max-age=2592000, immutable
+
+/assets/*
+  Cache-Control: public, max-age=2592000, immutable
+
+# ===============================
+# FONTS
+# Cache longo
+# ===============================
+*.woff
+  Cache-Control: public, max-age=2592000, immutable
+
+*.woff2
+  Cache-Control: public, max-age=2592000, immutable
+
+*.ttf
+  Cache-Control: public, max-age=2592000, immutable
+
+*.eot
+  Cache-Control: public, max-age=2592000, immutable
+
+*.svg
+  Cache-Control: public, max-age=2592000, immutable

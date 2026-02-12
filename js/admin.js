@@ -201,9 +201,9 @@ async function saveVehicle(e) {
   const vehicle = {
     brand: brand.value,
     model: model.value,
-    year: Number(year.value),
+    year: year.value.trim(),
     price: Number(price.value),
-    power: power.value || null,
+   power: power.value.trim(),
     category: category.value || null,
     fuel: fuel.value || null,
     transmission: transmission.value || null,
@@ -290,3 +290,5 @@ window.editVehicle = editVehicle;
 window.deleteVehicle = deleteVehicle;
 window.saveVehicle = saveVehicle;
 window.removePhoto = removePhoto;
+
+

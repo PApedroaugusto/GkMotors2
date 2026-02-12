@@ -78,6 +78,7 @@
   flex-direction: column;
   background: #020617;
   font-size: 15px;
+  margin-top: 10px;
 }
 
 .mobile-menu a {

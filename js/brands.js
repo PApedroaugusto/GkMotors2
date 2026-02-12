@@ -53,4 +53,3 @@ document.addEventListener("DOMContentLoaded", () => {
     brandsGrid.appendChild(card);
   });
 });
-
