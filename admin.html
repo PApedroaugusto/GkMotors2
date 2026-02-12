@@ -12,9 +12,10 @@
 <header class="admin-header">
   <h1>Painel Administrativo</h1>
   <p>Gerencie o estoque de veículos</p>
+  <button id="logoutBtn">Sair</button>
 </header>
 
-<a href="index.html" class="logo">Sair</a></button>
+
 
 <main class="container">
 
@@ -83,6 +84,31 @@
   </div>
 </div>
 
+
+<script>
+  const AUTH_KEY = "admin_logged";
+
+  // 🔹 PROTEÇÃO DO ADMIN
+  if (localStorage.getItem(AUTH_KEY) !== "true") {
+    window.location.replace("login.html");
+  }
+
+  // 🔹 Evita voltar para admin após logout
+  window.history.pushState(null, null, window.location.href);
+  window.onpopstate = function () {
+    if (localStorage.getItem(AUTH_KEY) !== "true") {
+      window.location.replace("login.html");
+    }
+  };
+
+  // 🔹 LOGOUT
+  const logoutBtn = document.getElementById("logoutBtn");
+  logoutBtn.addEventListener("click", () => {
+    localStorage.removeItem(AUTH_KEY);
+    window.location.replace("login.html");
+  });
+</script>
+
 <!-- Supabase JS CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -100,12 +126,6 @@
 <script src="js/guard.js"></script>
 <script src="js/admin.js"></script>
 
-<script>
-  document.getElementById("logout").onclick = async () => {
-    await window.supabaseClient.auth.signOut();
-    window.location.href = "login.html";
-  };
-</script>
 
 </body>
 </html>

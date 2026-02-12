@@ -86,6 +86,7 @@
   color: white;
   text-decoration: none;
   border-top: 1px solid #1e293b;
+  top: 0;
 }
 
 @media (max-width: 768px) {

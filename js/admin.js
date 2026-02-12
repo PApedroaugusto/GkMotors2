@@ -36,6 +36,7 @@ const newVehicleBtn = document.getElementById("NewVehicle");
 const Cancelbtn = document.getElementById("btnCancel");
 const saveBtn = document.getElementById("Save");
 
+
 // ===============================
 // STATE
 // ===============================
