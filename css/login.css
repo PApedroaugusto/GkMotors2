@@ -37,3 +37,14 @@ body {
 .hidden {
   display: none;
 }
+
+.btn-back {
+  margin-top: 20px;
+  background: #f97316;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  font-size: 18px;
+  border-radius: 8px;
+  cursor: pointer;
+}
