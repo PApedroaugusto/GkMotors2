@@ -83,3 +83,42 @@ router.post("/vehicles", async (req, res) => {
 });
 
 module.exports = router;
+
+
+// =====================
+// Comentários
+// =====================
+router.get("/comments", async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from("comments")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.post("/comments", async (req, res) => {
+  try {
+    const { name, message } = req.body;
+
+    if (!name || !message)
+      return res.status(400).json({ error: "Nome e mensagem são obrigatórios" });
+
+    const { data, error } = await supabase
+      .from("comments")
+      .insert([{ name, message }])
+      .select();
+
+    if (error) return res.status(500).json({ error: error.message });
+
+    res.json(data[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
