@@ -22,12 +22,13 @@ body {
 }
 
 .hero {
-  padding: 50px 20px;
+  padding: 70px 20px;
   text-align: center;
   color: white;
   background: linear-gradient(135deg, #000000 60%, #111111 100%);
   position: relative;
   overflow: hidden;
+  
 }
 
 /* LOGO */
@@ -38,7 +39,7 @@ body {
 .hero-image img {
   max-width: 280px;
   width: 90%;
-  height: auto;
+  height: 200px;
   filter: drop-shadow(0 0 25px var(--primary-color));
   transition: transform 0.4s ease, filter 0.4s ease;
 }
