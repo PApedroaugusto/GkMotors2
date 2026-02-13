@@ -17,62 +17,77 @@ body {
   
 }
 
-
-
+:root {
+  --primary-color: #f97316; /* TROQUE AQUI pela cor da sua logo */
+}
 
 .hero {
-  padding: 100px 20px;
+  padding: 80px 20px;
   text-align: center;
   color: white;
-  background: 
-    linear-gradient(90deg, black 55%, rgba(0,0,0,0.6) 100%),
-    url("../hero-car.png");
-  background-repeat: no-repeat;
-  background-position: right center;
-  background-size: contain;
-  text-align: center;
-  font-size: 15px;
-  height: 300px;
+  background: linear-gradient(135deg, #000000 60%, #111111 100%);
+  position: relative;
+  overflow: hidden;
 }
 
-
-
+/* LOGO */
 .hero-image {
-  position: absolute;        /* 🔥 permite posicionar no topo */
-  top: 0;                 /* distância do topo */
-  right: 40%;             /* canto direito */
-  width: 300px;              /* tamanho da imagem */
-  z-index: 10;               /* fica acima do fundo */
-}
-
-@media (max-width: 768px) {
-  .hero-image {
-    right: 25%; /* ajusta para telas menores */
-    width: 250px; /* reduz o tamanho da imagem */
-  }
+  margin-bottom: 25px;
 }
 
 .hero-image img {
-  width: 100%;
+  max-width: 280px;
+  width: 90%;
   height: auto;
+  filter: drop-shadow(0 0 25px var(--primary-color));
+  transition: transform 0.4s ease, filter 0.4s ease;
 }
 
-.hero span {
-  color: orange;
+/* Efeito chamativo */
+.hero-image img:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 35px var(--primary-color));
 }
 
-
-.content {
-  padding: 60px 20px;
-  max-width: 1200px;
-  margin: auto;
+/* TÍTULO */
+.hero h1 {
+  font-size: 2.2rem;
+  margin-bottom: 10px;
 }
 
+.hero h1 span {
+  color: var(--primary-color);
+}
+
+/* DESCRIÇÃO */
 .hero-description {
-  font-size: 18px;
-  margin-top: 20px;
-  color: #94a3b8;
+  font-size: 1rem;
+  color: #ccc;
+  max-width: 600px;
+  margin: 0 auto;
 }
+
+/* RESPONSIVO */
+@media (min-width: 768px) {
+  .hero {
+    padding: 120px 20px;
+  }
+
+  .hero-image img {
+    max-width: 350px;
+  }
+
+  .hero h1 {
+    font-size: 3rem;
+  }
+
+  .hero-description {
+    font-size: 1.2rem;
+  }
+}
+
+
+
 
 
 .search-box {
