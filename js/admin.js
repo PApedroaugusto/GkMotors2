@@ -215,7 +215,10 @@ async function saveVehicle(e) {
   e.preventDefault();
 
   const vehicle = {
-    brand: brand.value,
+    brand: brand.value
+  .trim()
+  .toLowerCase()
+  .replace(/\b\w/g, l => l.toUpperCase()),
     model: model.value,
     year: year.value,
     price: Number(price.value),

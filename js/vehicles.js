@@ -47,18 +47,55 @@ async function loadVehicles() {
 // POPULAR FILTROS
 // ===============================
 function populateFilters() {
-  const brands = [...new Set(vehicles.map(v => v.brand).filter(Boolean))].sort();
-  const years = [...new Set(vehicles.map(v => v.year).filter(Boolean))].sort((a,b)=>b-a);
-  const categories = [...new Set(vehicles.map(v=>v.category).filter(Boolean))].sort();
+  const brandMap = {};
+
+  vehicles.forEach(v => {
+    if (!v.brand) return;
+
+    const normalized = normalizeText(v.brand);
+
+    if (!brandMap[normalized]) {
+      // Padroniza visualmente (Primeira letra maiúscula)
+      brandMap[normalized] =
+        v.brand.charAt(0).toUpperCase() +
+        v.brand.slice(1).toLowerCase();
+    }
+  });
+
+  const brands = Object.values(brandMap).sort();
+
+  const years = [...new Set(vehicles.map(v => v.year).filter(Boolean))]
+    .sort((a, b) => b - a);
+
+  const categories = [...new Set(vehicles.map(v => v.category).filter(Boolean))]
+    .sort();
 
   if (brandFilter) brandFilter.innerHTML = `<option value="">Todas as marcas</option>`;
   if (yearFilter) yearFilter.innerHTML = `<option value="">Todos os anos</option>`;
   if (categoryFilter) categoryFilter.innerHTML = `<option value="">Todas categorias</option>`;
 
-  brands.forEach(b => brandFilter?.insertAdjacentHTML("beforeend", `<option value="${b}">${b}</option>`));
-  years.forEach(y => yearFilter?.insertAdjacentHTML("beforeend", `<option value="${y}">${y}</option>`));
-  categories.forEach(c => categoryFilter?.insertAdjacentHTML("beforeend", `<option value="${c}">${c}</option>`));
+  brands.forEach(b =>
+    brandFilter?.insertAdjacentHTML(
+      "beforeend",
+      `<option value="${b}">${b}</option>`
+    )
+  );
+
+  years.forEach(y =>
+    yearFilter?.insertAdjacentHTML(
+      "beforeend",
+      `<option value="${y}">${y}</option>`
+    )
+  );
+
+  categories.forEach(c =>
+    categoryFilter?.insertAdjacentHTML(
+      "beforeend",
+      `<option value="${c}">${c}</option>`
+    )
+  );
 }
+
 
 // ===============================
 // APLICAR FILTRO DA URL
@@ -97,6 +134,20 @@ function setupInfiniteScroll() {
 }
 
 // ===============================
+// NORMALIZAR TEXTO (remove espaço, acento e diferenciação de maiúsculo/minúsculo)
+// ===============================
+function normalizeText(text) {
+  return text
+    ?.toString()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // remove acentos
+    .replace(/\s+/g, "")             // remove espaços
+    .toLowerCase()
+    .trim();
+}
+
+
+// ===============================
 // APLICAR FILTROS
 // ===============================
 function applyFilters() {
@@ -107,7 +158,15 @@ function applyFilters() {
   if (search) filtered = filtered.filter(v => `${v.brand} ${v.model}`.toLowerCase().includes(search));
 
   // Marca
-  if (brandFilter.value) filtered = filtered.filter(v => v.brand === brandFilter.value);
+  // Marca (ignora maiúscula, minúscula e espaços)
+if (brandFilter.value) {
+  const selectedBrand = normalizeText(brandFilter.value);
+
+  filtered = filtered.filter(v => 
+    normalizeText(v.brand) === selectedBrand
+  );
+}
+
 
   // Ano
   if (yearFilter.value) filtered = filtered.filter(v => String(v.year) === yearFilter.value);
