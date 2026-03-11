@@ -64,11 +64,38 @@ function populateFilters() {
 
   const brands = Object.values(brandMap).sort();
 
-  const years = [...new Set(vehicles.map(v => v.year).filter(Boolean))]
-    .sort((a, b) => b - a);
+  const yearSet = new Set();
 
-  const categories = [...new Set(vehicles.map(v => v.category).filter(Boolean))]
-    .sort();
+vehicles.forEach(v => {
+  if (!v.year) return;
+
+  const yearStr = v.year.toString();
+
+  if (yearStr.includes("/")) {
+    const parts = yearStr.split("/");
+    parts.forEach(y => yearSet.add(y.trim()));
+  } else {
+    yearSet.add(yearStr.trim());
+  }
+});
+
+const years = [...yearSet].sort((a, b) => a - b);
+
+  const categoryMap = {};
+
+vehicles.forEach(v => {
+  if (!v.category) return;
+
+  const normalized = normalizeText(v.category);
+
+  if (!categoryMap[normalized]) {
+    categoryMap[normalized] =
+      v.category.charAt(0).toUpperCase() +
+      v.category.slice(1).toLowerCase();
+  }
+});
+
+const categories = Object.values(categoryMap).sort();
 
   if (brandFilter) brandFilter.innerHTML = `<option value="">Todas as marcas</option>`;
   if (yearFilter) yearFilter.innerHTML = `<option value="">Todos os anos</option>`;
@@ -169,10 +196,29 @@ if (brandFilter.value) {
 
 
   // Ano
-  if (yearFilter.value) filtered = filtered.filter(v => String(v.year) === yearFilter.value);
+  if (yearFilter.value) {
+  filtered = filtered.filter(v => {
+    if (!v.year) return false;
+
+    const yearStr = v.year.toString();
+
+    if (yearStr.includes("/")) {
+      const parts = yearStr.split("/");
+      return parts.includes(yearFilter.value);
+    }
+
+    return yearStr === yearFilter.value;
+  });
+}
 
   // Categoria
-  if (categoryFilter.value) filtered = filtered.filter(v => v.category === categoryFilter.value);
+  if (categoryFilter.value) {
+  const selectedCategory = normalizeText(categoryFilter.value);
+
+  filtered = filtered.filter(v =>
+    normalizeText(v.category) === selectedCategory
+  );
+}
 
   // Preço
   if (priceFilter.value) {
