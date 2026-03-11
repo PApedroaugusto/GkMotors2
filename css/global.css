@@ -309,6 +309,9 @@ text-align: center;
   .card img {
     height: 260px;
   }
+
+  .brand img {
+  filter: grayscale(0%);}
 }
 
 

@@ -70,6 +70,13 @@ grid-template-columns: repeat(5, 1fr);
   .brands-grid {
     grid-template-columns: repeat(3,1fr);
   }
+
+  .brand-logo img {
+  
+  filter: grayscale(0%) brightness(1.4);
+  
+}
+
 }
 
 /* CARD */
